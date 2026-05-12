@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Phone, Mail, MapPin, ArrowRight, Check, Printer, Shirt, Car, Megaphone, PenTool, Layers, Lightbulb, Flag, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroImg from "@/assets/hero.jpg";
-import logoImg from "@/assets/logo.jpg";
+import logoImg from "@/assets/logo.png";
 import aboutImg from "@/assets/about.jpg";
 import logo1 from "@/assets/logo-1.jpg";
 import logo2 from "@/assets/logo-2.jpg";
@@ -63,7 +63,7 @@ function Index() {
       <header className="fixed top-0 inset-x-0 z-50 backdrop-blur-md bg-background/70 border-b border-border/50">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
           <a href="#top" className="flex items-center">
-            <img src={logoImg} alt="D.Tiba Gráfica" className="h-10 w-10 object-contain rounded" />
+            <img src={logoImg} alt="D.Tiba Gráfica" className="h-10 w-auto object-contain" />
           </a>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
             <a href="#sobre" className="hover:text-primary transition-colors">Sobre</a>
@@ -269,8 +269,7 @@ function Index() {
       <footer className="bg-secondary text-secondary-foreground py-10">
         <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
           <div className="flex items-center gap-2">
-            <img src={logoImg} alt="D.Tiba" className="h-7 w-7 object-contain rounded" />
-            <span className="font-bold">D.TIBA Gráfica</span>
+            <img src={logoImg} alt="D.Tiba Gráfica" className="h-8 w-auto object-contain" />
           </div>
           <div className="text-white/60">© {new Date().getFullYear()} D.Tiba Gráfica. Todos os direitos reservados.</div>
         </div>
