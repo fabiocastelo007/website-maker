@@ -15,6 +15,7 @@ import {
   type SiteContent,
   type ServiceItem,
   type PortfolioItem,
+  type PortfolioCategory,
   type ValueItem,
 } from "@/lib/site-content";
 import { isAdminAuthed, loginAdmin, logoutAdmin } from "@/lib/admin-auth";
@@ -318,6 +319,50 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
               <h2 className="text-lg font-bold">Portfólio</h2>
               <Field label="Etiqueta" value={draft.portfolio.eyebrow} onChange={(v) => update("portfolio", { ...draft.portfolio, eyebrow: v })} />
               <Field label="Título" value={draft.portfolio.title} onChange={(v) => update("portfolio", { ...draft.portfolio, title: v })} />
+
+              {/* Categorias / Estações */}
+              <Card className="p-4 bg-muted/40 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-bold">Estações / Categorias</h3>
+                    <p className="text-xs text-muted-foreground">Cada estação cria uma divisão na área do portfólio. Atribua trabalhos abaixo.</p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => {
+                    const id = "cat_" + Math.random().toString(36).slice(2, 8);
+                    const arr = [...(draft.portfolio.categories ?? []), { id, name: "Nova estação" } as PortfolioCategory];
+                    update("portfolio", { ...draft.portfolio, categories: arr });
+                  }}>
+                    <Plus className="w-4 h-4 mr-1" /> Adicionar estação
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {(draft.portfolio.categories ?? []).map((cat, i) => (
+                    <div key={cat.id} className="flex gap-2 items-center">
+                      <span className="text-xs text-muted-foreground w-8">#{i + 1}</span>
+                      <Input
+                        value={cat.name}
+                        onChange={(e) => {
+                          const arr = [...draft.portfolio.categories];
+                          arr[i] = { ...arr[i], name: e.target.value };
+                          update("portfolio", { ...draft.portfolio, categories: arr });
+                        }}
+                        placeholder="Nome da estação"
+                      />
+                      <ReorderButtons i={i} list={draft.portfolio.categories} onChange={(arr) => update("portfolio", { ...draft.portfolio, categories: arr })} />
+                      <Button variant="ghost" size="icon" onClick={() => {
+                        if (!confirm(`Remover estação "${cat.name}"? Os trabalhos ficarão sem categoria.`)) return;
+                        const arr = draft.portfolio.categories.filter((_, j) => j !== i);
+                        const items = draft.portfolio.items.map((p) => p.categoryId === cat.id ? { ...p, categoryId: undefined } : p);
+                        update("portfolio", { ...draft.portfolio, categories: arr, items });
+                      }}><Trash2 className="w-4 h-4" /></Button>
+                    </div>
+                  ))}
+                  {(!draft.portfolio.categories || draft.portfolio.categories.length === 0) && (
+                    <p className="text-sm text-muted-foreground">Nenhuma estação criada. Os trabalhos aparecerão em "Outros".</p>
+                  )}
+                </div>
+              </Card>
+
               <div className="space-y-3">
                 {draft.portfolio.items.map((p, i) => (
                   <Card key={i} className="p-4 bg-muted/40">
@@ -331,10 +376,29 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
                         }}><Trash2 className="w-4 h-4" /></Button>
                       </div>
                     </div>
-                    <Field label="Legenda" value={p.label} onChange={(v) => {
-                      const arr = [...draft.portfolio.items]; arr[i] = { ...arr[i], label: v };
-                      update("portfolio", { ...draft.portfolio, items: arr });
-                    }} />
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <Field label="Legenda" value={p.label} onChange={(v) => {
+                        const arr = [...draft.portfolio.items]; arr[i] = { ...arr[i], label: v };
+                        update("portfolio", { ...draft.portfolio, items: arr });
+                      }} />
+                      <div className="space-y-1.5">
+                        <Label className="text-sm">Estação</Label>
+                        <select
+                          className="w-full h-10 rounded-md border bg-background px-2 text-sm"
+                          value={p.categoryId ?? ""}
+                          onChange={(e) => {
+                            const arr = [...draft.portfolio.items];
+                            arr[i] = { ...arr[i], categoryId: e.target.value || undefined };
+                            update("portfolio", { ...draft.portfolio, items: arr });
+                          }}
+                        >
+                          <option value="">— sem categoria —</option>
+                          {(draft.portfolio.categories ?? []).map((cat) => (
+                            <option key={cat.id} value={cat.id}>{cat.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
                     <div className="mt-2">
                       <ImageField value={p.src} onChange={(v) => {
                         const arr = [...draft.portfolio.items]; arr[i] = { ...arr[i], src: v };
