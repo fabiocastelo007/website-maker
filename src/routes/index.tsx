@@ -62,9 +62,8 @@ function Index() {
       {/* NAV */}
       <header className="fixed top-0 inset-x-0 z-50 backdrop-blur-md bg-background/70 border-b border-border/50">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-          <a href="#top" className="flex items-center gap-2">
-            <img src={logoImg} alt="D.Tiba Gráfica" className="h-9 w-9 object-contain rounded" />
-            <span className="font-bold tracking-tight text-lg">D.TIBA <span className="text-primary">Gráfica</span></span>
+          <a href="#top" className="flex items-center">
+            <img src={logoImg} alt="D.Tiba Gráfica" className="h-10 w-10 object-contain rounded" />
           </a>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
             <a href="#sobre" className="hover:text-primary transition-colors">Sobre</a>
@@ -72,9 +71,9 @@ function Index() {
             <a href="#portfolio" className="hover:text-primary transition-colors">Portfólio</a>
             <a href="#contacto" className="hover:text-primary transition-colors">Contacto</a>
           </nav>
-          <a href="tel:+244935181383">
+          <a href="tel:+244952272121">
             <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
-              <Phone className="w-4 h-4 mr-1" /> +244 935 181 383
+              <Phone className="w-4 h-4 mr-1" /> +244 952 272 121
             </Button>
           </a>
         </div>
@@ -232,22 +231,22 @@ function Index() {
               <div className="bg-background text-foreground rounded-2xl p-8 shadow-card">
                 <h3 className="font-bold text-xl mb-5">Linha de Atendimento</h3>
                 <div className="space-y-4">
-                  <a href="tel:+244935181383" className="flex items-start gap-4 p-4 rounded-xl hover:bg-muted transition-colors">
+                  <a href="tel:+244952272121" className="flex items-start gap-4 p-4 rounded-xl hover:bg-muted transition-colors">
                     <div className="w-11 h-11 rounded-full bg-gradient-hero flex items-center justify-center shrink-0">
                       <Phone className="w-5 h-5 text-primary-foreground" />
                     </div>
                     <div>
                       <div className="text-xs text-muted-foreground uppercase tracking-wider">Comercial</div>
-                      <div className="font-bold text-lg">+244 935 181 383</div>
+                      <div className="font-bold text-lg">+244 952 272 121</div>
                     </div>
                   </a>
-                  <a href="mailto:geralmisaartes@gmail.com" className="flex items-start gap-4 p-4 rounded-xl hover:bg-muted transition-colors">
+                  <a href="mailto:comercialdtiba@gmail.com" className="flex items-start gap-4 p-4 rounded-xl hover:bg-muted transition-colors">
                     <div className="w-11 h-11 rounded-full bg-gradient-hero flex items-center justify-center shrink-0">
                       <Mail className="w-5 h-5 text-primary-foreground" />
                     </div>
                     <div>
                       <div className="text-xs text-muted-foreground uppercase tracking-wider">Email</div>
-                      <div className="font-semibold break-all">geralmisaartes@gmail.com</div>
+                      <div className="font-semibold break-all">comercialdtiba@gmail.com</div>
                     </div>
                   </a>
                   <div className="flex items-start gap-4 p-4 rounded-xl">
