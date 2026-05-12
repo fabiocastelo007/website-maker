@@ -11,7 +11,6 @@ import logo6 from "@/assets/logo-6.jpg";
 import id1 from "@/assets/identity-1.jpg";
 import id2 from "@/assets/identity-2.jpg";
 import id3 from "@/assets/identity-3.jpg";
-import printSmall from "@/assets/print-small.jpg";
 import textile from "@/assets/textile.jpg";
 import vehicle1 from "@/assets/vehicle-1.jpg";
 import vehicle2 from "@/assets/vehicle-2.jpg";
@@ -152,9 +151,6 @@ export const defaultContent: SiteContent = {
   footer: {
     copyright: `© ${new Date().getFullYear()} D.Tiba Gráfica. Todos os direitos reservados.`,
   },
-  // unused — keeps printSmall import live in case admin re-adds it
-  // @ts-expect-error
-  _printSmall: printSmall,
 };
 
 const STORAGE_KEY = "dtiba_site_content_v1";
