@@ -22,7 +22,8 @@ import flag from "@/assets/flag.jpg";
 import luminous from "@/assets/luminous.jpg";
 
 export type ServiceItem = { icon: string; title: string; desc: string };
-export type PortfolioItem = { src: string; label: string };
+export type PortfolioItem = { src: string; label: string; categoryId?: string };
+export type PortfolioCategory = { id: string; name: string };
 export type ValueItem = { t: string; d: string };
 
 export type SiteContent = {
@@ -54,7 +55,12 @@ export type SiteContent = {
     items: ServiceItem[];
   };
   logos: { eyebrow: string; title: string; items: string[] };
-  portfolio: { eyebrow: string; title: string; items: PortfolioItem[] };
+  portfolio: {
+    eyebrow: string;
+    title: string;
+    categories: PortfolioCategory[];
+    items: PortfolioItem[];
+  };
   contact: {
     title: string;
     subtitle: string;
@@ -119,19 +125,27 @@ export const defaultContent: SiteContent = {
   portfolio: {
     eyebrow: "Portfólio",
     title: "Trabalhos que falam por nós",
+    categories: [
+      { id: "outdoor", name: "Outdoor & Sinalética" },
+      { id: "vehicle", name: "Decoração de Viaturas" },
+      { id: "stand", name: "Stands & Eventos" },
+      { id: "textile", name: "Impressão Têxtil" },
+      { id: "identity", name: "Identidade & Papelaria" },
+      { id: "3d", name: "Letras 3D & Luminosos" },
+    ],
     items: [
-      { src: id1, label: "Outdoor Auto Hotait" },
-      { src: vehicle1, label: "Decoração de Viaturas" },
-      { src: stand, label: "Stand Fenix Farma" },
-      { src: outdoor, label: "Outdoor Original Brands" },
-      { src: textile, label: "Impressão Têxtil" },
-      { src: luminous, label: "Painel Luminoso" },
-      { src: flag, label: "Bandeiras Equity" },
-      { src: logo3d, label: "Letras 3D — Le Beirut" },
-      { src: vehicle2, label: "Viatura Elza Trans" },
-      { src: id2, label: "Cartões de Visita" },
-      { src: id3, label: "Uniformes Corporativos" },
-      { src: printLarge, label: "Banner Stand" },
+      { src: id1, label: "Outdoor Auto Hotait", categoryId: "outdoor" },
+      { src: outdoor, label: "Outdoor Original Brands", categoryId: "outdoor" },
+      { src: flag, label: "Bandeiras Equity", categoryId: "outdoor" },
+      { src: luminous, label: "Painel Luminoso", categoryId: "3d" },
+      { src: logo3d, label: "Letras 3D — Le Beirut", categoryId: "3d" },
+      { src: vehicle1, label: "Decoração de Viaturas", categoryId: "vehicle" },
+      { src: vehicle2, label: "Viatura Elza Trans", categoryId: "vehicle" },
+      { src: stand, label: "Stand Fenix Farma", categoryId: "stand" },
+      { src: printLarge, label: "Banner Stand", categoryId: "stand" },
+      { src: textile, label: "Impressão Têxtil", categoryId: "textile" },
+      { src: id2, label: "Cartões de Visita", categoryId: "identity" },
+      { src: id3, label: "Uniformes Corporativos", categoryId: "identity" },
     ],
   },
   contact: {
