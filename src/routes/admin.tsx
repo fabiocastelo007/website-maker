@@ -1,0 +1,433 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card";
+import { Lock, LogOut, Save, RotateCcw, Plus, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  defaultContent,
+  getSiteContent,
+  resetSiteContent,
+  setSiteContent,
+  type SiteContent,
+  type ServiceItem,
+  type PortfolioItem,
+  type ValueItem,
+} from "@/lib/site-content";
+import { isAdminAuthed, loginAdmin, logoutAdmin } from "@/lib/admin-auth";
+import { ImageField } from "@/components/admin/ImageField";
+
+export const Route = createFileRoute("/admin")({
+  component: AdminPage,
+});
+
+const ICON_OPTIONS = [
+  "PenTool", "Layers", "Printer", "Shirt", "Car", "Megaphone",
+  "Lightbulb", "Building2", "Flag", "Sparkles",
+];
+
+function AdminPage() {
+  const [authed, setAuthed] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    setAuthed(isAdminAuthed());
+    setReady(true);
+  }, []);
+
+  if (!ready) return null;
+  if (!authed) return <LoginScreen onLogin={() => setAuthed(true)} />;
+  return <AdminPanel onLogout={() => setAuthed(false)} />;
+}
+
+function LoginScreen({ onLogin }: { onLogin: () => void }) {
+  const [user, setUser] = useState("");
+  const [pass, setPass] = useState("");
+  const [err, setErr] = useState("");
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (loginAdmin(user, pass)) {
+      setErr("");
+      onLogin();
+    } else {
+      setErr("Usuário ou senha incorretos.");
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-dark p-6">
+      <Card className="w-full max-w-sm p-8 bg-card">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-11 h-11 rounded-xl bg-gradient-hero flex items-center justify-center">
+            <Lock className="w-5 h-5 text-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold">Painel Admin</h1>
+            <p className="text-xs text-muted-foreground">D.Tiba Gráfica</p>
+          </div>
+        </div>
+        <form onSubmit={submit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="u">Usuário</Label>
+            <Input id="u" value={user} onChange={(e) => setUser(e.target.value)} autoFocus />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="p">Senha</Label>
+            <Input id="p" type="password" value={pass} onChange={(e) => setPass(e.target.value)} />
+          </div>
+          {err && <p className="text-sm text-destructive">{err}</p>}
+          <Button type="submit" className="w-full bg-gradient-hero">Entrar</Button>
+        </form>
+      </Card>
+    </div>
+  );
+}
+
+function AdminPanel({ onLogout }: { onLogout: () => void }) {
+  const navigate = useNavigate();
+  const [draft, setDraft] = useState<SiteContent>(() => structuredClone(getSiteContent()));
+  const [saved, setSaved] = useState(false);
+
+  const update = <K extends keyof SiteContent>(key: K, value: SiteContent[K]) => {
+    setDraft((d) => ({ ...d, [key]: value }));
+    setSaved(false);
+  };
+
+  const save = () => {
+    try {
+      setSiteContent(draft);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch {
+      alert("Erro ao salvar — provável limite do navegador (imagens muito grandes).");
+    }
+  };
+
+  const reset = () => {
+    if (!confirm("Restaurar todo o conteúdo original? Suas alterações serão perdidas.")) return;
+    resetSiteContent();
+    setDraft(structuredClone(defaultContent));
+  };
+
+  const doLogout = () => {
+    logoutAdmin();
+    onLogout();
+  };
+
+  return (
+    <div className="min-h-screen bg-muted/30">
+      <header className="sticky top-0 z-40 bg-background border-b">
+        <div className="container mx-auto px-6 h-16 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <img src={draft.brand.logo} alt="" className="h-9 w-auto" />
+            <div className="leading-tight">
+              <div className="font-bold text-sm">Painel Admin</div>
+              <div className="text-xs text-muted-foreground">D.Tiba Gráfica</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {saved && <span className="text-sm text-primary font-medium">✓ Salvo</span>}
+            <Button variant="outline" size="sm" onClick={() => navigate({ to: "/" })}>Ver site</Button>
+            <Button variant="outline" size="sm" onClick={reset}><RotateCcw className="w-4 h-4 mr-1" />Restaurar</Button>
+            <Button size="sm" onClick={save} className="bg-primary"><Save className="w-4 h-4 mr-1" />Salvar</Button>
+            <Button variant="ghost" size="sm" onClick={doLogout}><LogOut className="w-4 h-4 mr-1" />Sair</Button>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-6 py-8 max-w-6xl">
+        <div className="mb-6 p-4 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-900">
+          <strong>Aviso:</strong> Alterações são salvas no seu navegador (localStorage). Outros visitantes não verão as mudanças até você integrar com Lovable Cloud.
+        </div>
+
+        <Tabs defaultValue="brand" className="w-full">
+          <TabsList className="flex flex-wrap h-auto bg-card border p-1">
+            <TabsTrigger value="brand">Marca</TabsTrigger>
+            <TabsTrigger value="hero">Hero</TabsTrigger>
+            <TabsTrigger value="about">Sobre</TabsTrigger>
+            <TabsTrigger value="services">Serviços</TabsTrigger>
+            <TabsTrigger value="logos">Logos Criados</TabsTrigger>
+            <TabsTrigger value="portfolio">Portfólio</TabsTrigger>
+            <TabsTrigger value="contact">Contato</TabsTrigger>
+            <TabsTrigger value="footer">Rodapé</TabsTrigger>
+          </TabsList>
+
+          {/* MARCA */}
+          <TabsContent value="brand">
+            <Card className="p-6 space-y-4">
+              <h2 className="text-lg font-bold">Logo da empresa</h2>
+              <ImageField
+                label="Logo (aparece no topo, rodapé e favicon)"
+                value={draft.brand.logo}
+                onChange={(v) => update("brand", { ...draft.brand, logo: v })}
+                aspect="aspect-square"
+              />
+            </Card>
+          </TabsContent>
+
+          {/* HERO */}
+          <TabsContent value="hero">
+            <Card className="p-6 space-y-4">
+              <h2 className="text-lg font-bold">Seção Hero (topo)</h2>
+              <Field label="Etiqueta superior" value={draft.hero.badge} onChange={(v) => update("hero", { ...draft.hero, badge: v })} />
+              <div className="grid md:grid-cols-3 gap-3">
+                <Field label="Título — linha 1" value={draft.hero.titleLine1} onChange={(v) => update("hero", { ...draft.hero, titleLine1: v })} />
+                <Field label="Título — linha 2" value={draft.hero.titleLine2} onChange={(v) => update("hero", { ...draft.hero, titleLine2: v })} />
+                <Field label="Palavra em destaque" value={draft.hero.titleEmphasis} onChange={(v) => update("hero", { ...draft.hero, titleEmphasis: v })} />
+              </div>
+              <Field label="Subtítulo" textarea value={draft.hero.subtitle} onChange={(v) => update("hero", { ...draft.hero, subtitle: v })} />
+              <div className="grid md:grid-cols-2 gap-3">
+                <Field label="Botão primário" value={draft.hero.ctaPrimary} onChange={(v) => update("hero", { ...draft.hero, ctaPrimary: v })} />
+                <Field label="Botão secundário" value={draft.hero.ctaSecondary} onChange={(v) => update("hero", { ...draft.hero, ctaSecondary: v })} />
+              </div>
+              <ImageField label="Imagem hero" value={draft.hero.image} onChange={(v) => update("hero", { ...draft.hero, image: v })} aspect="aspect-[4/5]" />
+              <div className="grid md:grid-cols-2 gap-3">
+                <Field label="Estatística (número)" value={draft.hero.statNumber} onChange={(v) => update("hero", { ...draft.hero, statNumber: v })} />
+                <Field label="Estatística (texto)" value={draft.hero.statLabel} onChange={(v) => update("hero", { ...draft.hero, statLabel: v })} />
+              </div>
+            </Card>
+          </TabsContent>
+
+          {/* SOBRE */}
+          <TabsContent value="about">
+            <Card className="p-6 space-y-4">
+              <h2 className="text-lg font-bold">Seção Sobre</h2>
+              <ImageField label="Imagem (logo grande)" value={draft.about.image} onChange={(v) => update("about", { ...draft.about, image: v })} aspect="aspect-square" />
+              <Field label="Etiqueta" value={draft.about.eyebrow} onChange={(v) => update("about", { ...draft.about, eyebrow: v })} />
+              <div className="grid md:grid-cols-2 gap-3">
+                <Field label="Título" value={draft.about.title} onChange={(v) => update("about", { ...draft.about, title: v })} />
+                <Field label="Palavra em destaque" value={draft.about.titleEmphasis} onChange={(v) => update("about", { ...draft.about, titleEmphasis: v })} />
+              </div>
+              <Field label="Texto" textarea value={draft.about.text} onChange={(v) => update("about", { ...draft.about, text: v })} />
+              <div className="space-y-2">
+                <Label>Cards (Visão / Missão / Valores)</Label>
+                {draft.about.values.map((v, i) => (
+                  <div key={i} className="grid md:grid-cols-[1fr_2fr_auto] gap-2 items-start">
+                    <Input value={v.t} onChange={(e) => {
+                      const arr = [...draft.about.values]; arr[i] = { ...arr[i], t: e.target.value };
+                      update("about", { ...draft.about, values: arr });
+                    }} placeholder="Título" />
+                    <Textarea value={v.d} onChange={(e) => {
+                      const arr = [...draft.about.values]; arr[i] = { ...arr[i], d: e.target.value };
+                      update("about", { ...draft.about, values: arr });
+                    }} placeholder="Descrição" rows={2} />
+                    <Button variant="ghost" size="icon" onClick={() => {
+                      const arr = draft.about.values.filter((_, j) => j !== i);
+                      update("about", { ...draft.about, values: arr });
+                    }}><Trash2 className="w-4 h-4" /></Button>
+                  </div>
+                ))}
+                <Button variant="outline" size="sm" onClick={() => update("about", { ...draft.about, values: [...draft.about.values, { t: "Novo", d: "Descrição" } as ValueItem] })}>
+                  <Plus className="w-4 h-4 mr-1" /> Adicionar card
+                </Button>
+              </div>
+            </Card>
+          </TabsContent>
+
+          {/* SERVIÇOS */}
+          <TabsContent value="services">
+            <Card className="p-6 space-y-4">
+              <h2 className="text-lg font-bold">Serviços</h2>
+              <Field label="Etiqueta" value={draft.services.eyebrow} onChange={(v) => update("services", { ...draft.services, eyebrow: v })} />
+              <div className="grid md:grid-cols-2 gap-3">
+                <Field label="Título" value={draft.services.title} onChange={(v) => update("services", { ...draft.services, title: v })} />
+                <Field label="Palavra em destaque" value={draft.services.titleEmphasis} onChange={(v) => update("services", { ...draft.services, titleEmphasis: v })} />
+              </div>
+              <div className="space-y-3">
+                {draft.services.items.map((s, i) => (
+                  <Card key={i} className="p-4 bg-muted/40">
+                    <div className="flex items-start gap-2 mb-2">
+                      <span className="text-xs font-bold text-muted-foreground">#{i + 1}</span>
+                      <div className="ml-auto flex gap-1">
+                        <ReorderButtons i={i} list={draft.services.items} onChange={(arr) => update("services", { ...draft.services, items: arr })} />
+                        <Button variant="ghost" size="icon" onClick={() => {
+                          const arr = draft.services.items.filter((_, j) => j !== i);
+                          update("services", { ...draft.services, items: arr });
+                        }}><Trash2 className="w-4 h-4" /></Button>
+                      </div>
+                    </div>
+                    <div className="grid md:grid-cols-3 gap-2">
+                      <div>
+                        <Label className="text-xs">Ícone</Label>
+                        <select className="w-full h-9 rounded-md border bg-background px-2 text-sm" value={s.icon} onChange={(e) => {
+                          const arr = [...draft.services.items]; arr[i] = { ...arr[i], icon: e.target.value };
+                          update("services", { ...draft.services, items: arr });
+                        }}>
+                          {ICON_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
+                        </select>
+                      </div>
+                      <div className="md:col-span-2">
+                        <Label className="text-xs">Título</Label>
+                        <Input value={s.title} onChange={(e) => {
+                          const arr = [...draft.services.items]; arr[i] = { ...arr[i], title: e.target.value };
+                          update("services", { ...draft.services, items: arr });
+                        }} />
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <Label className="text-xs">Descrição</Label>
+                      <Textarea rows={2} value={s.desc} onChange={(e) => {
+                        const arr = [...draft.services.items]; arr[i] = { ...arr[i], desc: e.target.value };
+                        update("services", { ...draft.services, items: arr });
+                      }} />
+                    </div>
+                  </Card>
+                ))}
+                <Button variant="outline" size="sm" onClick={() => update("services", { ...draft.services, items: [...draft.services.items, { icon: "Sparkles", title: "Novo serviço", desc: "Descrição" } as ServiceItem] })}>
+                  <Plus className="w-4 h-4 mr-1" /> Adicionar serviço
+                </Button>
+              </div>
+            </Card>
+          </TabsContent>
+
+          {/* LOGOS */}
+          <TabsContent value="logos">
+            <Card className="p-6 space-y-4">
+              <h2 className="text-lg font-bold">Logos criados (clientes)</h2>
+              <Field label="Etiqueta" value={draft.logos.eyebrow} onChange={(v) => update("logos", { ...draft.logos, eyebrow: v })} />
+              <Field label="Título" value={draft.logos.title} onChange={(v) => update("logos", { ...draft.logos, title: v })} />
+              <div className="space-y-3">
+                {draft.logos.items.map((src, i) => (
+                  <div key={i} className="flex gap-3 items-start">
+                    <div className="flex-1">
+                      <ImageField value={src} onChange={(v) => {
+                        const arr = [...draft.logos.items]; arr[i] = v;
+                        update("logos", { ...draft.logos, items: arr });
+                      }} aspect="aspect-square" />
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={() => {
+                      const arr = draft.logos.items.filter((_, j) => j !== i);
+                      update("logos", { ...draft.logos, items: arr });
+                    }}><Trash2 className="w-4 h-4" /></Button>
+                  </div>
+                ))}
+                <Button variant="outline" size="sm" onClick={() => update("logos", { ...draft.logos, items: [...draft.logos.items, ""] })}>
+                  <Plus className="w-4 h-4 mr-1" /> Adicionar logo
+                </Button>
+              </div>
+            </Card>
+          </TabsContent>
+
+          {/* PORTFÓLIO */}
+          <TabsContent value="portfolio">
+            <Card className="p-6 space-y-4">
+              <h2 className="text-lg font-bold">Portfólio</h2>
+              <Field label="Etiqueta" value={draft.portfolio.eyebrow} onChange={(v) => update("portfolio", { ...draft.portfolio, eyebrow: v })} />
+              <Field label="Título" value={draft.portfolio.title} onChange={(v) => update("portfolio", { ...draft.portfolio, title: v })} />
+              <div className="space-y-3">
+                {draft.portfolio.items.map((p, i) => (
+                  <Card key={i} className="p-4 bg-muted/40">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold text-muted-foreground">#{i + 1}</span>
+                      <div className="flex gap-1">
+                        <ReorderButtons i={i} list={draft.portfolio.items} onChange={(arr) => update("portfolio", { ...draft.portfolio, items: arr })} />
+                        <Button variant="ghost" size="icon" onClick={() => {
+                          const arr = draft.portfolio.items.filter((_, j) => j !== i);
+                          update("portfolio", { ...draft.portfolio, items: arr });
+                        }}><Trash2 className="w-4 h-4" /></Button>
+                      </div>
+                    </div>
+                    <Field label="Legenda" value={p.label} onChange={(v) => {
+                      const arr = [...draft.portfolio.items]; arr[i] = { ...arr[i], label: v };
+                      update("portfolio", { ...draft.portfolio, items: arr });
+                    }} />
+                    <div className="mt-2">
+                      <ImageField value={p.src} onChange={(v) => {
+                        const arr = [...draft.portfolio.items]; arr[i] = { ...arr[i], src: v };
+                        update("portfolio", { ...draft.portfolio, items: arr });
+                      }} aspect="aspect-[4/3]" />
+                    </div>
+                  </Card>
+                ))}
+                <Button variant="outline" size="sm" onClick={() => update("portfolio", { ...draft.portfolio, items: [...draft.portfolio.items, { src: "", label: "Novo trabalho" } as PortfolioItem] })}>
+                  <Plus className="w-4 h-4 mr-1" /> Adicionar trabalho
+                </Button>
+              </div>
+            </Card>
+          </TabsContent>
+
+          {/* CONTATO */}
+          <TabsContent value="contact">
+            <Card className="p-6 space-y-4">
+              <h2 className="text-lg font-bold">Contato</h2>
+              <Field label="Título" value={draft.contact.title} onChange={(v) => update("contact", { ...draft.contact, title: v })} />
+              <Field label="Subtítulo" textarea value={draft.contact.subtitle} onChange={(v) => update("contact", { ...draft.contact, subtitle: v })} />
+              <div className="space-y-2">
+                <Label>Bullets</Label>
+                {draft.contact.bullets.map((b, i) => (
+                  <div key={i} className="flex gap-2">
+                    <Input value={b} onChange={(e) => {
+                      const arr = [...draft.contact.bullets]; arr[i] = e.target.value;
+                      update("contact", { ...draft.contact, bullets: arr });
+                    }} />
+                    <Button variant="ghost" size="icon" onClick={() => {
+                      const arr = draft.contact.bullets.filter((_, j) => j !== i);
+                      update("contact", { ...draft.contact, bullets: arr });
+                    }}><Trash2 className="w-4 h-4" /></Button>
+                  </div>
+                ))}
+                <Button variant="outline" size="sm" onClick={() => update("contact", { ...draft.contact, bullets: [...draft.contact.bullets, "Novo benefício"] })}>
+                  <Plus className="w-4 h-4 mr-1" /> Adicionar bullet
+                </Button>
+              </div>
+              <Field label="Título da caixa de contato" value={draft.contact.boxTitle} onChange={(v) => update("contact", { ...draft.contact, boxTitle: v })} />
+              <div className="grid md:grid-cols-2 gap-3">
+                <Field label="Telefone (link tel:)" value={draft.contact.phone} onChange={(v) => update("contact", { ...draft.contact, phone: v })} />
+                <Field label="Telefone (exibido)" value={draft.contact.phoneDisplay} onChange={(v) => update("contact", { ...draft.contact, phoneDisplay: v })} />
+              </div>
+              <Field label="Email" value={draft.contact.email} onChange={(v) => update("contact", { ...draft.contact, email: v })} />
+              <Field label="Endereço" value={draft.contact.address} onChange={(v) => update("contact", { ...draft.contact, address: v })} />
+            </Card>
+          </TabsContent>
+
+          {/* RODAPÉ */}
+          <TabsContent value="footer">
+            <Card className="p-6 space-y-4">
+              <h2 className="text-lg font-bold">Rodapé</h2>
+              <Field label="Texto de copyright" value={draft.footer.copyright} onChange={(v) => update("footer", { ...draft.footer, copyright: v })} />
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        <div className="sticky bottom-4 mt-8 flex justify-end">
+          <Button size="lg" onClick={save} className="bg-primary shadow-elegant">
+            <Save className="w-4 h-4 mr-2" /> Salvar alterações
+          </Button>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function Field({ label, value, onChange, textarea }: { label: string; value: string; onChange: (v: string) => void; textarea?: boolean }) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-sm">{label}</Label>
+      {textarea ? (
+        <Textarea value={value} onChange={(e) => onChange(e.target.value)} rows={3} />
+      ) : (
+        <Input value={value} onChange={(e) => onChange(e.target.value)} />
+      )}
+    </div>
+  );
+}
+
+function ReorderButtons<T>({ i, list, onChange }: { i: number; list: T[]; onChange: (arr: T[]) => void }) {
+  const move = (dir: -1 | 1) => {
+    const j = i + dir;
+    if (j < 0 || j >= list.length) return;
+    const arr = [...list];
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+    onChange(arr);
+  };
+  return (
+    <>
+      <Button variant="ghost" size="icon" onClick={() => move(-1)} disabled={i === 0}><ChevronUp className="w-4 h-4" /></Button>
+      <Button variant="ghost" size="icon" onClick={() => move(1)} disabled={i === list.length - 1}><ChevronDown className="w-4 h-4" /></Button>
+    </>
+  );
+}
