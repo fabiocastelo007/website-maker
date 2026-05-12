@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Phone, Mail, MapPin, ArrowRight, Check, Printer, Shirt, Car, Megaphone, PenTool, Layers, Lightbulb, Flag, Building2, Sparkles, type LucideIcon } from "lucide-react";
+import { useState } from "react";
+import { Phone, Mail, MapPin, ArrowRight, Check, Printer, Shirt, Car, Megaphone, PenTool, Layers, Lightbulb, Flag, Building2, Sparkles, Maximize2, X, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useSiteContent } from "@/lib/site-content";
 
 export const Route = createFileRoute("/")({
@@ -13,6 +15,23 @@ const ICONS: Record<string, LucideIcon> = {
 
 function Index() {
   const c = useSiteContent();
+  const [lightbox, setLightbox] = useState<{ src: string; label: string } | null>(null);
+
+  const grouped = (() => {
+    const cats = c.portfolio.categories ?? [];
+    const buckets = cats.map((cat) => ({
+      cat,
+      items: c.portfolio.items.filter((p) => p.categoryId === cat.id),
+    }));
+    const orphans = c.portfolio.items.filter(
+      (p) => !p.categoryId || !cats.some((cat) => cat.id === p.categoryId),
+    );
+    if (orphans.length) {
+      buckets.push({ cat: { id: "__other__", name: "Outros" }, items: orphans });
+    }
+    return buckets.filter((b) => b.items.length > 0);
+  })();
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* NAV */}
@@ -145,22 +164,65 @@ function Index() {
       {/* PORTFOLIO */}
       <section id="portfolio" className="py-24 bg-gradient-dark text-primary-foreground">
         <div className="container mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-16">
+          <div className="text-center max-w-3xl mx-auto mb-16">
             <span className="text-sm font-semibold text-accent tracking-widest uppercase">{c.portfolio.eyebrow}</span>
-            <h2 className="text-4xl md:text-5xl font-bold mt-3">{c.portfolio.title}</h2>
+            <h1 className="text-6xl md:text-8xl font-extrabold mt-4 leading-[0.95] tracking-tight">
+              {c.portfolio.title}
+            </h1>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {c.portfolio.items.map((p, i) => (
-              <div key={i} className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-secondary">
-                <img src={p.src} alt={p.label} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
-                <div className="absolute bottom-0 left-0 right-0 p-5">
-                  <div className="text-sm font-semibold tracking-wide">{p.label}</div>
+
+          <div className="space-y-16">
+            {grouped.map(({ cat, items }) => (
+              <div key={cat.id}>
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="h-px flex-1 bg-white/15" />
+                  <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-accent uppercase">
+                    {cat.name}
+                  </h2>
+                  <div className="h-px flex-1 bg-white/15" />
+                </div>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {items.map((p, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setLightbox({ src: p.src, label: p.label })}
+                      className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-secondary text-left focus:outline-none focus:ring-2 focus:ring-accent"
+                    >
+                      <img src={p.src} alt={p.label} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
+                      <div className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/15 backdrop-blur flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Maximize2 className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 p-5">
+                        <div className="text-sm font-semibold tracking-wide">{p.label}</div>
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
             ))}
           </div>
         </div>
+
+        <Dialog open={!!lightbox} onOpenChange={(o) => !o && setLightbox(null)}>
+          <DialogContent className="max-w-5xl p-0 bg-black/95 border-none">
+            <button
+              type="button"
+              onClick={() => setLightbox(null)}
+              className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur flex items-center justify-center text-white"
+              aria-label="Fechar"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            {lightbox && (
+              <div className="flex flex-col">
+                <img src={lightbox.src} alt={lightbox.label} className="w-full max-h-[85vh] object-contain bg-black" />
+                <div className="p-4 text-center text-white text-sm font-medium">{lightbox.label}</div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </section>
 
       {/* CTA / CONTACTO */}
