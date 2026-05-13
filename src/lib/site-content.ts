@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { fetchSiteContent, saveSiteContentFn } from "./site-content.functions";
 import heroImg from "@/assets/hero.jpg";
 import logoImg from "@/assets/logo.png";
 import aboutImg from "@/assets/about.jpg";
@@ -167,8 +168,6 @@ export const defaultContent: SiteContent = {
   },
 };
 
-const STORAGE_KEY = "dtiba_site_content_v1";
-
 function deepMerge<T>(base: T, override: any): T {
   if (override === undefined || override === null) return base;
   if (Array.isArray(base) || Array.isArray(override)) return (override ?? base) as T;
@@ -183,59 +182,49 @@ function deepMerge<T>(base: T, override: any): T {
 }
 
 let current: SiteContent = defaultContent;
+let loaded = false;
+let loadingPromise: Promise<void> | null = null;
 const listeners = new Set<() => void>();
-
-function load() {
-  if (typeof window === "undefined") return;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) current = deepMerge(defaultContent, JSON.parse(raw));
-  } catch {
-    /* ignore */
-  }
-}
-load();
 
 function emit() {
   listeners.forEach((l) => l());
+}
+
+async function loadFromCloud() {
+  if (loaded || loadingPromise) return loadingPromise ?? Promise.resolve();
+  loadingPromise = (async () => {
+    try {
+      const res = await fetchSiteContent();
+      const parsed = res?.content ? JSON.parse(res.content) : {};
+      current = deepMerge(defaultContent, parsed);
+      loaded = true;
+      emit();
+    } catch (e) {
+      console.error("Falha ao carregar conteúdo do Cloud", e);
+    }
+  })();
+  return loadingPromise;
 }
 
 export function getSiteContent(): SiteContent {
   return current;
 }
 
-export function setSiteContent(next: SiteContent) {
+export async function saveSiteContent(next: SiteContent, password: string) {
+  await saveSiteContentFn({ data: { password, content: next as unknown as object } });
   current = next;
-  if (typeof window !== "undefined") {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    } catch (e) {
-      console.error("Falha ao salvar conteúdo (provável limite do localStorage)", e);
-      throw e;
-    }
-  }
   emit();
 }
 
-export function resetSiteContent() {
-  current = defaultContent;
-  if (typeof window !== "undefined") localStorage.removeItem(STORAGE_KEY);
-  emit();
+export async function resetSiteContent(password: string) {
+  await saveSiteContent(defaultContent, password);
 }
 
 function subscribe(cb: () => void) {
   listeners.add(cb);
-  // Sync across tabs
-  const onStorage = (e: StorageEvent) => {
-    if (e.key === STORAGE_KEY) {
-      load();
-      cb();
-    }
-  };
-  if (typeof window !== "undefined") window.addEventListener("storage", onStorage);
+  if (typeof window !== "undefined") void loadFromCloud();
   return () => {
     listeners.delete(cb);
-    if (typeof window !== "undefined") window.removeEventListener("storage", onStorage);
   };
 }
 

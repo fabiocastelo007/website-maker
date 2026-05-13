@@ -11,14 +11,15 @@ import {
   defaultContent,
   getSiteContent,
   resetSiteContent,
-  setSiteContent,
+  saveSiteContent,
+  useSiteContent,
   type SiteContent,
   type ServiceItem,
   type PortfolioItem,
   type PortfolioCategory,
   type ValueItem,
 } from "@/lib/site-content";
-import { isAdminAuthed, loginAdmin, logoutAdmin } from "@/lib/admin-auth";
+import { getAdminPass, isAdminAuthed, loginAdmin, logoutAdmin } from "@/lib/admin-auth";
 import { ImageField } from "@/components/admin/ImageField";
 
 export const Route = createFileRoute("/admin")({
@@ -90,28 +91,51 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
 
 function AdminPanel({ onLogout }: { onLogout: () => void }) {
   const navigate = useNavigate();
-  const [draft, setDraft] = useState<SiteContent>(() => structuredClone(getSiteContent()));
+  const live = useSiteContent();
+  const [draft, setDraft] = useState<SiteContent>(() => structuredClone(live));
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    if (!hydrated) {
+      setDraft(structuredClone(live));
+      setHydrated(true);
+    }
+  }, [live, hydrated]);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const update = <K extends keyof SiteContent>(key: K, value: SiteContent[K]) => {
     setDraft((d) => ({ ...d, [key]: value }));
     setSaved(false);
   };
 
-  const save = () => {
+  const save = async () => {
+    const pass = getAdminPass();
+    if (!pass) { alert("Sessão expirada. Faça login novamente."); onLogout(); return; }
+    setSaving(true);
     try {
-      setSiteContent(draft);
+      await saveSiteContent(draft, pass);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
-    } catch {
-      alert("Erro ao salvar — provável limite do navegador (imagens muito grandes).");
+    } catch (e: any) {
+      alert("Erro ao salvar: " + (e?.message ?? "desconhecido"));
+    } finally {
+      setSaving(false);
     }
   };
 
-  const reset = () => {
-    if (!confirm("Restaurar todo o conteúdo original? Suas alterações serão perdidas.")) return;
-    resetSiteContent();
-    setDraft(structuredClone(defaultContent));
+  const reset = async () => {
+    if (!confirm("Restaurar todo o conteúdo original? Esta ação grava no Cloud.")) return;
+    const pass = getAdminPass();
+    if (!pass) { alert("Sessão expirada."); onLogout(); return; }
+    setSaving(true);
+    try {
+      await resetSiteContent(pass);
+      setDraft(structuredClone(defaultContent));
+    } catch (e: any) {
+      alert("Erro: " + (e?.message ?? "desconhecido"));
+    } finally {
+      setSaving(false);
+    }
   };
 
   const doLogout = () => {
@@ -133,16 +157,16 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
           <div className="flex items-center gap-2">
             {saved && <span className="text-sm text-primary font-medium">✓ Salvo</span>}
             <Button variant="outline" size="sm" onClick={() => navigate({ to: "/" })}>Ver site</Button>
-            <Button variant="outline" size="sm" onClick={reset}><RotateCcw className="w-4 h-4 mr-1" />Restaurar</Button>
-            <Button size="sm" onClick={save} className="bg-primary"><Save className="w-4 h-4 mr-1" />Salvar</Button>
+            <Button variant="outline" size="sm" onClick={reset} disabled={saving}><RotateCcw className="w-4 h-4 mr-1" />Restaurar</Button>
+            <Button size="sm" onClick={save} disabled={saving} className="bg-primary"><Save className="w-4 h-4 mr-1" />{saving ? "A salvar…" : "Salvar"}</Button>
             <Button variant="ghost" size="sm" onClick={doLogout}><LogOut className="w-4 h-4 mr-1" />Sair</Button>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-6 py-8 max-w-6xl">
-        <div className="mb-6 p-4 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-900">
-          <strong>Aviso:</strong> Alterações são salvas no seu navegador (localStorage). Outros visitantes não verão as mudanças até você integrar com Lovable Cloud.
+        <div className="mb-6 p-4 rounded-lg bg-emerald-50 border border-emerald-200 text-sm text-emerald-900">
+          <strong>Lovable Cloud activo:</strong> as alterações são gravadas no servidor e ficam visíveis para todos os visitantes.
         </div>
 
         <Tabs defaultValue="brand" className="w-full">
@@ -458,8 +482,8 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
         </Tabs>
 
         <div className="sticky bottom-4 mt-8 flex justify-end">
-          <Button size="lg" onClick={save} className="bg-primary shadow-elegant">
-            <Save className="w-4 h-4 mr-2" /> Salvar alterações
+          <Button size="lg" onClick={save} disabled={saving} className="bg-primary shadow-elegant">
+            <Save className="w-4 h-4 mr-2" /> {saving ? "A salvar…" : "Salvar alterações"}
           </Button>
         </div>
       </main>
