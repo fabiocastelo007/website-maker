@@ -13,7 +13,7 @@ export const fetchSiteContent = createServerFn({ method: "GET" }).handler(
       .eq("id", 1)
       .maybeSingle();
     if (error) throw new Error(error.message);
-    return (data?.content ?? {}) as Record<string, unknown>;
+    return { content: JSON.stringify(data?.content ?? {}) };
   },
 );
 
@@ -33,7 +33,7 @@ export const saveSiteContentFn = createServerFn({ method: "POST" })
     }
     const { error } = await supabaseAdmin
       .from("site_content")
-      .update({ content: data.content as object, updated_at: new Date().toISOString() })
+      .update({ content: data.content as any, updated_at: new Date().toISOString() })
       .eq("id", 1);
     if (error) throw new Error(error.message);
     return { ok: true };
