@@ -9,6 +9,8 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import { Preloader } from "@/components/Preloader";
+import { useSiteContentLoaded } from "@/lib/site-content";
 
 function NotFoundComponent() {
   return (
@@ -115,10 +117,17 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const loaded = useSiteContentLoaded();
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <Preloader visible={!loaded} />
+      <div
+        className={`transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"}`}
+        aria-busy={!loaded}
+      >
+        {loaded ? <Outlet /> : null}
+      </div>
     </QueryClientProvider>
   );
 }
