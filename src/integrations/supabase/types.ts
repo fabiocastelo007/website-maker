@@ -37,7 +37,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_site_content: {
+        Args: { p_content: Json; p_password: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
