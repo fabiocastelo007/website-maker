@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { fetchSiteContent, saveSiteContentFn } from "./site-content.functions";
+import { supabase } from "@/integrations/supabase/client";
 import heroImg from "@/assets/hero.jpg";
 import logoImg from "@/assets/logo.png";
 import aboutImg from "@/assets/about.jpg";
@@ -194,9 +194,13 @@ async function loadFromCloud() {
   if (loaded || loadingPromise) return loadingPromise ?? Promise.resolve();
   loadingPromise = (async () => {
     try {
-      const res = await fetchSiteContent();
-      const parsed = res?.content ? JSON.parse(res.content) : {};
-      current = deepMerge(defaultContent, parsed);
+      const { data, error } = await supabase
+        .from("site_content")
+        .select("content")
+        .eq("id", 1)
+        .maybeSingle();
+      if (error) throw error;
+      current = deepMerge(defaultContent, (data?.content as any) ?? {});
       loaded = true;
       emit();
     } catch (e) {
@@ -211,7 +215,11 @@ export function getSiteContent(): SiteContent {
 }
 
 export async function saveSiteContent(next: SiteContent, password: string) {
-  await saveSiteContentFn({ data: { password, content: next as unknown as object } });
+  const { error } = await supabase.rpc("update_site_content", {
+    p_password: password,
+    p_content: next as unknown as any,
+  });
+  if (error) throw new Error(error.message);
   current = next;
   emit();
 }
