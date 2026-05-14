@@ -185,9 +185,14 @@ let current: SiteContent = defaultContent;
 let loaded = false;
 let loadingPromise: Promise<void> | null = null;
 const listeners = new Set<() => void>();
+const loadedListeners = new Set<() => void>();
 
 function emit() {
   listeners.forEach((l) => l());
+}
+
+function emitLoaded() {
+  loadedListeners.forEach((l) => l());
 }
 
 async function loadFromCloud() {
@@ -203,8 +208,12 @@ async function loadFromCloud() {
       current = deepMerge(defaultContent, (data?.content as any) ?? {});
       loaded = true;
       emit();
+      emitLoaded();
     } catch (e) {
       console.error("Falha ao carregar conteúdo do Cloud", e);
+      // Mark as loaded to unblock UI even on failure (defaults will show).
+      loaded = true;
+      emitLoaded();
     }
   })();
   return loadingPromise;
@@ -238,4 +247,20 @@ function subscribe(cb: () => void) {
 
 export function useSiteContent(): SiteContent {
   return useSyncExternalStore(subscribe, getSiteContent, () => defaultContent);
+}
+
+function subscribeLoaded(cb: () => void) {
+  loadedListeners.add(cb);
+  if (typeof window !== "undefined") void loadFromCloud();
+  return () => {
+    loadedListeners.delete(cb);
+  };
+}
+
+export function useSiteContentLoaded(): boolean {
+  return useSyncExternalStore(
+    subscribeLoaded,
+    () => loaded,
+    () => false,
+  );
 }
