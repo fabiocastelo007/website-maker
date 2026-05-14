@@ -198,6 +198,14 @@ function emitLoaded() {
 async function loadFromCloud() {
   if (loaded || loadingPromise) return loadingPromise ?? Promise.resolve();
   loadingPromise = (async () => {
+    // Fallback: if the network is slow, unblock the UI after 800ms
+    // with default content. Real data will hydrate as soon as it arrives.
+    const fallback = setTimeout(() => {
+      if (!loaded) {
+        loaded = true;
+        emitLoaded();
+      }
+    }, 800);
     try {
       const { data, error } = await supabase
         .from("site_content")
@@ -211,9 +219,10 @@ async function loadFromCloud() {
       emitLoaded();
     } catch (e) {
       console.error("Falha ao carregar conteúdo do Cloud", e);
-      // Mark as loaded to unblock UI even on failure (defaults will show).
       loaded = true;
       emitLoaded();
+    } finally {
+      clearTimeout(fallback);
     }
   })();
   return loadingPromise;
