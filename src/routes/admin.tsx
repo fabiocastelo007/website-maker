@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,6 @@ import { Card } from "@/components/ui/card";
 import { Lock, LogOut, Save, RotateCcw, Plus, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import {
   defaultContent,
-  getSiteContent,
   resetSiteContent,
   saveSiteContent,
   useSiteContent,
@@ -19,8 +18,9 @@ import {
   type PortfolioCategory,
   type ValueItem,
 } from "@/lib/site-content";
-import { getAdminPass, isAdminAuthed, loginAdmin, logoutAdmin } from "@/lib/admin-auth";
 import { ImageField } from "@/components/admin/ImageField";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth, useIsAdmin } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
@@ -32,64 +32,39 @@ const ICON_OPTIONS = [
 ];
 
 function AdminPage() {
-  const [authed, setAuthed] = useState(false);
-  const [ready, setReady] = useState(false);
+  const navigate = useNavigate();
+  const { session, loading } = useAuth();
+  const { data: isAdmin, isLoading: roleLoading } = useIsAdmin();
 
   useEffect(() => {
-    setAuthed(isAdminAuthed());
-    setReady(true);
-  }, []);
+    if (!loading && !session) navigate({ to: "/login" });
+  }, [loading, session, navigate]);
 
-  if (!ready) return null;
-  if (!authed) return <LoginScreen onLogin={() => setAuthed(true)} />;
-  return <AdminPanel onLogout={() => setAuthed(false)} />;
+  if (loading || roleLoading) {
+    return <div className="min-h-screen flex items-center justify-center text-muted-foreground">A carregar…</div>;
+  }
+  if (!session) return null;
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-dark p-6">
+        <Card className="max-w-md p-8 text-center">
+          <Lock className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
+          <h2 className="font-bold text-lg mb-2">Sem permissão</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            A tua conta está autenticada mas não tem permissão de administrador.
+            Pede a um admin para te dar acesso.
+          </p>
+          <Button variant="outline" onClick={async () => { await supabase.auth.signOut(); navigate({ to: "/login" }); }}>
+            Sair
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+  return <AdminPanel onLogout={async () => { await supabase.auth.signOut(); navigate({ to: "/login" }); }} />;
 }
 
-function LoginScreen({ onLogin }: { onLogin: () => void }) {
-  const [user, setUser] = useState("");
-  const [pass, setPass] = useState("");
-  const [err, setErr] = useState("");
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (loginAdmin(user, pass)) {
-      setErr("");
-      onLogin();
-    } else {
-      setErr("Usuário ou senha incorretos.");
-    }
-  };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-dark p-6">
-      <Card className="w-full max-w-sm p-8 bg-card">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-11 h-11 rounded-xl bg-gradient-hero flex items-center justify-center">
-            <Lock className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold">Painel Admin</h1>
-            <p className="text-xs text-muted-foreground">D.Tiba Gráfica</p>
-          </div>
-        </div>
-        <form onSubmit={submit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="u">Usuário</Label>
-            <Input id="u" value={user} onChange={(e) => setUser(e.target.value)} autoFocus />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="p">Senha</Label>
-            <Input id="p" type="password" value={pass} onChange={(e) => setPass(e.target.value)} />
-          </div>
-          {err && <p className="text-sm text-destructive">{err}</p>}
-          <Button type="submit" className="w-full bg-gradient-hero">Entrar</Button>
-        </form>
-      </Card>
-    </div>
-  );
-}
-
-function AdminPanel({ onLogout }: { onLogout: () => void }) {
+function AdminPanel({ onLogout }: { onLogout: () => void | Promise<void> }) {
   const navigate = useNavigate();
   const live = useSiteContent();
   const [draft, setDraft] = useState<SiteContent>(() => structuredClone(live));
@@ -109,11 +84,9 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
   };
 
   const save = async () => {
-    const pass = getAdminPass();
-    if (!pass) { alert("Sessão expirada. Faça login novamente."); onLogout(); return; }
     setSaving(true);
     try {
-      await saveSiteContent(draft, pass);
+      await saveSiteContent(draft);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (e: any) {
@@ -125,11 +98,9 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
 
   const reset = async () => {
     if (!confirm("Restaurar todo o conteúdo original? Esta ação grava no Cloud.")) return;
-    const pass = getAdminPass();
-    if (!pass) { alert("Sessão expirada."); onLogout(); return; }
     setSaving(true);
     try {
-      await resetSiteContent(pass);
+      await resetSiteContent();
       setDraft(structuredClone(defaultContent));
     } catch (e: any) {
       alert("Erro: " + (e?.message ?? "desconhecido"));
@@ -139,8 +110,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
   };
 
   const doLogout = () => {
-    logoutAdmin();
-    onLogout();
+    void onLogout();
   };
 
   return (
