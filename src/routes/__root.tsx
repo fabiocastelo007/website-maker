@@ -10,6 +10,7 @@ import {
 
 import appCss from "../styles.css?url";
 import { Preloader } from "@/components/Preloader";
+import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { useSiteContentLoaded } from "@/lib/site-content";
 
 function NotFoundComponent() {
@@ -128,6 +129,7 @@ function RootComponent() {
       >
         {loaded ? <Outlet /> : null}
       </div>
+      <WhatsAppButton />
     </QueryClientProvider>
   );
 }
