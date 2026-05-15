@@ -1,4 +1,5 @@
-import { useSyncExternalStore } from "react";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import heroImg from "@/assets/hero.jpg";
 import logoImg from "@/assets/logo.png";
@@ -181,95 +182,67 @@ function deepMerge<T>(base: T, override: any): T {
   return (override ?? base) as T;
 }
 
-let current: SiteContent = defaultContent;
-let loaded = false;
-let loadingPromise: Promise<void> | null = null;
-const listeners = new Set<() => void>();
-const loadedListeners = new Set<() => void>();
+const QUERY_KEY = ["site-settings"] as const;
 
-function emit() {
-  listeners.forEach((l) => l());
-}
-
-function emitLoaded() {
-  loadedListeners.forEach((l) => l());
-}
-
-async function loadFromCloud() {
-  if (loaded || loadingPromise) return loadingPromise ?? Promise.resolve();
-  loadingPromise = (async () => {
-    // Fallback: if the network is slow, unblock the UI after 800ms
-    // with default content. Real data will hydrate as soon as it arrives.
-    const fallback = setTimeout(() => {
-      if (!loaded) {
-        loaded = true;
-        emitLoaded();
-      }
-    }, 800);
-    try {
-      const { data, error } = await supabase
-        .from("site_content")
-        .select("content")
-        .eq("id", 1)
-        .maybeSingle();
-      if (error) throw error;
-      current = deepMerge(defaultContent, (data?.content as any) ?? {});
-      loaded = true;
-      emit();
-      emitLoaded();
-    } catch (e) {
-      console.error("Falha ao carregar conteúdo do Cloud", e);
-      loaded = true;
-      emitLoaded();
-    } finally {
-      clearTimeout(fallback);
-    }
-  })();
-  return loadingPromise;
-}
-
-export function getSiteContent(): SiteContent {
-  return current;
-}
-
-export async function saveSiteContent(next: SiteContent, password: string) {
-  const { error } = await supabase.rpc("update_site_content", {
-    p_password: password,
-    p_content: next as unknown as any,
-  });
-  if (error) throw new Error(error.message);
-  current = next;
-  emit();
-}
-
-export async function resetSiteContent(password: string) {
-  await saveSiteContent(defaultContent, password);
-}
-
-function subscribe(cb: () => void) {
-  listeners.add(cb);
-  if (typeof window !== "undefined") void loadFromCloud();
-  return () => {
-    listeners.delete(cb);
-  };
+async function fetchSiteContent(): Promise<SiteContent> {
+  const { data, error } = await supabase
+    .from("site_settings")
+    .select("data")
+    .eq("id", 1)
+    .maybeSingle();
+  if (error) {
+    console.error("Falha ao carregar conteúdo", error);
+    return defaultContent;
+  }
+  return deepMerge(defaultContent, (data?.data as any) ?? {});
 }
 
 export function useSiteContent(): SiteContent {
-  return useSyncExternalStore(subscribe, getSiteContent, () => defaultContent);
-}
+  const qc = useQueryClient();
+  const { data } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: fetchSiteContent,
+    staleTime: 60_000,
+    placeholderData: defaultContent,
+  });
 
-function subscribeLoaded(cb: () => void) {
-  loadedListeners.add(cb);
-  if (typeof window !== "undefined") void loadFromCloud();
-  return () => {
-    loadedListeners.delete(cb);
-  };
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const channel = supabase
+      .channel("site_settings_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "site_settings" },
+        () => {
+          qc.invalidateQueries({ queryKey: QUERY_KEY });
+        },
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [qc]);
+
+  return data ?? defaultContent;
 }
 
 export function useSiteContentLoaded(): boolean {
-  return useSyncExternalStore(
-    subscribeLoaded,
-    () => loaded,
-    () => false,
-  );
+  const { isSuccess, isError, fetchStatus } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: fetchSiteContent,
+    staleTime: 60_000,
+  });
+  // unblock UI as soon as the first fetch settles (success or error)
+  return isSuccess || isError || fetchStatus === "idle";
+}
+
+export async function saveSiteContent(next: SiteContent) {
+  const { error } = await supabase
+    .from("site_settings")
+    .upsert({ id: 1, data: next as unknown as any });
+  if (error) throw new Error(error.message);
+}
+
+export async function resetSiteContent() {
+  await saveSiteContent(defaultContent);
 }
