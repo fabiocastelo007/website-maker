@@ -118,18 +118,25 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const loaded = useSiteContentLoaded();
-
   return (
     <QueryClientProvider client={queryClient}>
+      <AppShell />
+    </QueryClientProvider>
+  );
+}
+
+function AppShell() {
+  const loaded = useSiteContentLoaded();
+  return (
+    <>
       <Preloader visible={!loaded} />
       <div
         className={`transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"}`}
         aria-busy={!loaded}
       >
-        {loaded ? <Outlet /> : null}
+        <Outlet />
       </div>
       <WhatsAppButton />
-    </QueryClientProvider>
+    </>
   );
 }
