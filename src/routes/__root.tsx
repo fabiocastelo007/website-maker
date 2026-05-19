@@ -12,6 +12,7 @@ import appCss from "../styles.css?url";
 import { Preloader } from "@/components/Preloader";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { useSiteContentLoaded } from "@/lib/site-content";
+import { LangProvider } from "@/lib/i18n";
 
 function NotFoundComponent() {
   return (
@@ -120,7 +121,9 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <AppShell />
+      <LangProvider>
+        <AppShell />
+      </LangProvider>
     </QueryClientProvider>
   );
 }
