@@ -223,7 +223,7 @@ function Index() {
               type="button"
               onClick={() => setLightbox(null)}
               className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur flex items-center justify-center text-white"
-              aria-label="Fechar"
+              aria-label={t("close")}
             >
               <X className="w-5 h-5" />
             </button>
