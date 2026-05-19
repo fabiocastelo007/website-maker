@@ -4,6 +4,8 @@ import { Phone, Mail, MapPin, ArrowRight, Check, Printer, Shirt, Car, Megaphone,
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useSiteContent } from "@/lib/site-content";
+import { useTranslatedContent, useT } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -14,7 +16,9 @@ const ICONS: Record<string, LucideIcon> = {
 };
 
 function Index() {
-  const c = useSiteContent();
+  const raw = useSiteContent();
+  const { content: c, isTranslating } = useTranslatedContent(raw);
+  const t = useT();
   const [lightbox, setLightbox] = useState<{ src: string; label: string } | null>(null);
 
   const grouped = (() => {
@@ -41,17 +45,25 @@ function Index() {
             <img src={c.brand.logo} alt="D.Tiba Gráfica" className="h-10 w-auto object-contain" />
           </a>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
-            <a href="#sobre" className="hover:text-primary transition-colors">Sobre</a>
-            <a href="#servicos" className="hover:text-primary transition-colors">Serviços</a>
-            <a href="#portfolio" className="hover:text-primary transition-colors">Portfólio</a>
-            <a href="#contacto" className="hover:text-primary transition-colors">Contacto</a>
+            <a href="#sobre" className="hover:text-primary transition-colors">{t("navAbout")}</a>
+            <a href="#servicos" className="hover:text-primary transition-colors">{t("navServices")}</a>
+            <a href="#portfolio" className="hover:text-primary transition-colors">{t("navPortfolio")}</a>
+            <a href="#contacto" className="hover:text-primary transition-colors">{t("navContact")}</a>
           </nav>
-          <a href={`tel:${c.contact.phone}`}>
-            <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
-              <Phone className="w-4 h-4 mr-1" /> {c.contact.phoneDisplay}
-            </Button>
-          </a>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <a href={`tel:${c.contact.phone}`} className="hidden sm:inline-flex">
+              <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
+                <Phone className="w-4 h-4 mr-1" /> {c.contact.phoneDisplay}
+              </Button>
+            </a>
+          </div>
         </div>
+        {isTranslating && (
+          <div className="text-center text-xs py-1 bg-primary/10 text-primary">
+            {t("translating")}
+          </div>
+        )}
       </header>
 
       {/* HERO */}
@@ -248,7 +260,7 @@ function Index() {
                       <Phone className="w-5 h-5 text-primary-foreground" />
                     </div>
                     <div>
-                      <div className="text-xs text-muted-foreground uppercase tracking-wider">Comercial</div>
+                      <div className="text-xs text-muted-foreground uppercase tracking-wider">{t("labelCommercial")}</div>
                       <div className="font-bold text-lg">{c.contact.phoneDisplay}</div>
                     </div>
                   </a>
@@ -257,7 +269,7 @@ function Index() {
                       <Mail className="w-5 h-5 text-primary-foreground" />
                     </div>
                     <div>
-                      <div className="text-xs text-muted-foreground uppercase tracking-wider">Email</div>
+                      <div className="text-xs text-muted-foreground uppercase tracking-wider">{t("labelEmail")}</div>
                       <div className="font-semibold break-all">{c.contact.email}</div>
                     </div>
                   </a>
@@ -266,7 +278,7 @@ function Index() {
                       <MapPin className="w-5 h-5 text-primary-foreground" />
                     </div>
                     <div>
-                      <div className="text-xs text-muted-foreground uppercase tracking-wider">Endereço</div>
+                      <div className="text-xs text-muted-foreground uppercase tracking-wider">{t("labelAddress")}</div>
                       <div className="font-semibold">{c.contact.address}</div>
                     </div>
                   </div>
