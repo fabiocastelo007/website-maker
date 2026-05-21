@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Phone, Mail, MapPin, ArrowRight, Check, Printer, Shirt, Car, Megaphone, PenTool, Layers, Lightbulb, Flag, Building2, Sparkles, Maximize2, X, type LucideIcon } from "lucide-react";
+import { Phone, Mail, MapPin, ArrowRight, Check, Printer, Shirt, Car, Megaphone, PenTool, Layers, Lightbulb, Flag, Building2, Sparkles, Maximize2, X, Menu, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useSiteContent } from "@/lib/site-content";
@@ -20,6 +20,7 @@ function Index() {
   const { content: c, isTranslating } = useTranslatedContent(raw);
   const t = useT();
   const [lightbox, setLightbox] = useState<{ src: string; label: string } | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const grouped = (() => {
     const cats = c.portfolio.categories ?? [];
@@ -40,9 +41,9 @@ function Index() {
     <div className="min-h-screen bg-background text-foreground">
       {/* NAV */}
       <header className="fixed top-0 inset-x-0 z-50 backdrop-blur-md bg-background/70 border-b border-border/50">
-        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-          <a href="#top" className="flex items-center">
-            <img src={c.brand.logo} alt="D.Tiba Gráfica" className="h-10 w-auto object-contain" />
+        <div className="container mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-2">
+          <a href="#top" className="flex items-center shrink-0">
+            <img src={c.brand.logo} alt="D.Tiba Gráfica" className="h-9 sm:h-10 w-auto object-contain" />
           </a>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
             <a href="#sobre" className="hover:text-primary transition-colors">{t("navAbout")}</a>
@@ -50,15 +51,35 @@ function Index() {
             <a href="#portfolio" className="hover:text-primary transition-colors">{t("navPortfolio")}</a>
             <a href="#contacto" className="hover:text-primary transition-colors">{t("navContact")}</a>
           </nav>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <LanguageSwitcher />
-            <a href={`tel:${c.contact.phone}`} className="hidden sm:inline-flex">
-              <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
-                <Phone className="w-4 h-4 mr-1" /> {c.contact.phoneDisplay}
+            <a href={`tel:${c.contact.phone}`} className="inline-flex">
+              <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-3">
+                <Phone className="w-4 h-4 sm:mr-1" />
+                <span className="hidden sm:inline">{c.contact.phoneDisplay}</span>
               </Button>
             </a>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label="Menu"
+              aria-expanded={menuOpen}
+              className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-full border border-border hover:bg-muted transition-colors"
+            >
+              {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
         </div>
+        {menuOpen && (
+          <nav className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-md">
+            <div className="container mx-auto px-6 py-4 flex flex-col gap-1 text-sm font-medium">
+              <a href="#sobre" onClick={() => setMenuOpen(false)} className="py-2 hover:text-primary transition-colors">{t("navAbout")}</a>
+              <a href="#servicos" onClick={() => setMenuOpen(false)} className="py-2 hover:text-primary transition-colors">{t("navServices")}</a>
+              <a href="#portfolio" onClick={() => setMenuOpen(false)} className="py-2 hover:text-primary transition-colors">{t("navPortfolio")}</a>
+              <a href="#contacto" onClick={() => setMenuOpen(false)} className="py-2 hover:text-primary transition-colors">{t("navContact")}</a>
+            </div>
+          </nav>
+        )}
         {isTranslating && (
           <div className="text-center text-xs py-1 bg-primary/10 text-primary">
             {t("translating")}
