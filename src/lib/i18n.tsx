@@ -94,14 +94,14 @@ function collectStrings(content: SiteContent): { paths: (string | number)[][]; v
     "ctaPrimary", "ctaSecondary", "statLabel",
     "eyebrow", "title", "text", "boxTitle",
     "name", "label", "desc", "description", "copyright",
-    "subtitle", "t", "d",
+    "t", "d", "bullets",
   ]);
 
-  function walk(node: any, path: (string | number)[]) {
+  function walk(node: any, path: (string | number)[], parentKey: string) {
     if (node == null) return;
     if (typeof node === "string") {
       const lastKey = path[path.length - 1];
-      const keyStr = typeof lastKey === "string" ? lastKey : "";
+      const keyStr = typeof lastKey === "string" ? lastKey : parentKey;
       if (TEXT_KEYS.has(keyStr) && node.trim() && !node.startsWith("http") && !node.startsWith("/") && !node.startsWith("data:")) {
         paths.push([...path]);
         values.push(node);
@@ -109,15 +109,15 @@ function collectStrings(content: SiteContent): { paths: (string | number)[][]; v
       return;
     }
     if (Array.isArray(node)) {
-      node.forEach((item, i) => walk(item, [...path, i]));
+      node.forEach((item, i) => walk(item, [...path, i], parentKey));
       return;
     }
     if (typeof node === "object") {
-      for (const k of Object.keys(node)) walk(node[k], [...path, k]);
+      for (const k of Object.keys(node)) walk(node[k], [...path, k], k);
     }
   }
 
-  walk(content, []);
+  walk(content, [], "");
   return { paths, values };
 }
 
