@@ -236,6 +236,17 @@ export function useSiteContentLoaded(): boolean {
   return isSuccess || isError || fetchStatus === "idle";
 }
 
+/** True only when the real content from the Cloud has arrived (not placeholder defaults). */
+export function useSiteContentReady(): { content: SiteContent; ready: boolean } {
+  const { data, isSuccess, isPlaceholderData } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: fetchSiteContent,
+    staleTime: 60_000,
+    placeholderData: defaultContent,
+  });
+  return { content: data ?? defaultContent, ready: isSuccess && !isPlaceholderData };
+}
+
 export async function saveSiteContent(next: SiteContent) {
   const { error } = await supabase
     .from("site_settings")
