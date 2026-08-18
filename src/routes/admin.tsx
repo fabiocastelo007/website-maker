@@ -11,7 +11,6 @@ import {
   defaultContent,
   resetSiteContent,
   saveSiteContent,
-  useSiteContent,
   useSiteContentReady,
   type SiteContent,
   type ServiceItem,
@@ -128,8 +127,8 @@ function AdminPanel({ onLogout }: { onLogout: () => void | Promise<void> }) {
           <div className="flex items-center gap-2">
             {saved && <span className="text-sm text-primary font-medium">✓ Salvo</span>}
             <Button variant="outline" size="sm" onClick={() => navigate({ to: "/" })}>Ver site</Button>
-            <Button variant="outline" size="sm" onClick={reset} disabled={saving}><RotateCcw className="w-4 h-4 mr-1" />Restaurar</Button>
-            <Button size="sm" onClick={save} disabled={saving} className="bg-primary"><Save className="w-4 h-4 mr-1" />{saving ? "A salvar…" : "Salvar"}</Button>
+            <Button variant="outline" size="sm" onClick={reset} disabled={saving || !hydrated}><RotateCcw className="w-4 h-4 mr-1" />Restaurar</Button>
+            <Button size="sm" onClick={save} disabled={saving || !hydrated} className="bg-primary"><Save className="w-4 h-4 mr-1" />{saving ? "A salvar…" : "Salvar"}</Button>
             <Button variant="ghost" size="sm" onClick={doLogout}><LogOut className="w-4 h-4 mr-1" />Sair</Button>
           </div>
         </div>
@@ -453,7 +452,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void | Promise<void> }) {
         </Tabs>
 
         <div className="sticky bottom-4 mt-8 flex justify-end">
-          <Button size="lg" onClick={save} disabled={saving} className="bg-primary shadow-elegant">
+          <Button size="lg" onClick={save} disabled={saving || !hydrated} className="bg-primary shadow-elegant">
             <Save className="w-4 h-4 mr-2" /> {saving ? "A salvar…" : "Salvar alterações"}
           </Button>
         </div>
