@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import heroImg from "@/assets/hero.jpg";
@@ -249,6 +249,47 @@ export function useSiteContentLoaded(): boolean {
 }
 
 /** True only when the real content from the Cloud has arrived (not placeholder defaults). */
+export function collectImageUrls(content: SiteContent): string[] {
+  const urls: string[] = [];
+  const walk = (v: any) => {
+    if (typeof v === "string") {
+      if (/\.(png|jpe?g|webp|gif|avif|svg)(\?|$)/i.test(v) || v.startsWith("data:image")) urls.push(v);
+    } else if (Array.isArray(v)) v.forEach(walk);
+    else if (v && typeof v === "object") Object.values(v).forEach(walk);
+  };
+  walk(content);
+  return Array.from(new Set(urls));
+}
+
+/** Waits until the images referenced by the current content are decoded (max 4s). */
+export function useImagesPreloaded(content: SiteContent, enabled: boolean): boolean {
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    if (!enabled || typeof window === "undefined") return;
+    let cancelled = false;
+    const urls = collectImageUrls(content);
+    const timer = window.setTimeout(() => !cancelled && setDone(true), 4000);
+    Promise.all(
+      urls.map(
+        (src) =>
+          new Promise<void>((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve();
+            img.onerror = () => resolve();
+            img.src = src;
+          }),
+      ),
+    ).then(() => {
+      if (!cancelled) setDone(true);
+    });
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [enabled, content]);
+  return done;
+}
+
 export function useSiteContentReady(): { content: SiteContent; ready: boolean } {
   const { data, isSuccess, isPlaceholderData } = useQuery({
     queryKey: QUERY_KEY,

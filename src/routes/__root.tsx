@@ -11,7 +11,7 @@ import {
 import appCss from "../styles.css?url";
 import { Preloader } from "@/components/Preloader";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
-import { useSiteContentLoaded } from "@/lib/site-content";
+import { useSiteContentReady, useImagesPreloaded } from "@/lib/site-content";
 import { LangProvider } from "@/lib/i18n";
 
 function NotFoundComponent() {
@@ -129,7 +129,9 @@ function RootComponent() {
 }
 
 function AppShell() {
-  const loaded = useSiteContentLoaded();
+  const { content, ready } = useSiteContentReady();
+  const imagesReady = useImagesPreloaded(content, ready);
+  const loaded = ready && imagesReady;
   return (
     <>
       <Preloader visible={!loaded} />
