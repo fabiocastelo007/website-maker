@@ -165,7 +165,7 @@ export const defaultContent: SiteContent = {
     address: "Projecto Nova Vida — Luanda, Angola",
   },
   footer: {
-    copyright: `© ${new Date().getFullYear()} D.Tiba Gráfica. Todos os direitos reservados.`,
+    copyright: "© D.Tiba Gráfica. Todos os direitos reservados.",
   },
 };
 
@@ -237,13 +237,15 @@ export function useSiteContent(): SiteContent {
 }
 
 export function useSiteContentLoaded(): boolean {
-  const { isSuccess, isError, fetchStatus } = useQuery({
+  const { isSuccess, isError, isPlaceholderData } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: fetchSiteContent,
     staleTime: 60_000,
+    placeholderData: defaultContent,
   });
-  // unblock UI as soon as the first fetch settles (success or error)
-  return isSuccess || isError || fetchStatus === "idle";
+  // keep the preloader up until the real Cloud content is in cache,
+  // so old/default content never flashes on load or refresh
+  return (isSuccess && !isPlaceholderData) || isError;
 }
 
 /** True only when the real content from the Cloud has arrived (not placeholder defaults). */
