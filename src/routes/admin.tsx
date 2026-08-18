@@ -12,6 +12,7 @@ import {
   resetSiteContent,
   saveSiteContent,
   useSiteContent,
+  useSiteContentReady,
   type SiteContent,
   type ServiceItem,
   type PortfolioItem,
@@ -66,15 +67,15 @@ function AdminPage() {
 
 function AdminPanel({ onLogout }: { onLogout: () => void | Promise<void> }) {
   const navigate = useNavigate();
-  const live = useSiteContent();
+  const { content: live, ready } = useSiteContentReady();
   const [draft, setDraft] = useState<SiteContent>(() => structuredClone(live));
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
-    if (!hydrated) {
+    if (!hydrated && ready) {
       setDraft(structuredClone(live));
       setHydrated(true);
     }
-  }, [live, hydrated]);
+  }, [live, hydrated, ready]);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
