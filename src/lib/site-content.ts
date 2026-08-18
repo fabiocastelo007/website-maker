@@ -171,6 +171,11 @@ export const defaultContent: SiteContent = {
 
 function deepMerge<T>(base: T, override: any): T {
   if (override === undefined || override === null) return base;
+  // Ignore stale build-hashed asset paths (e.g. "/assets/about-BIqbIvaW.jpg")
+  // saved by older versions — they no longer resolve after a rebuild.
+  if (typeof override === "string" && /^\/assets\/.+-[A-Za-z0-9_-]{6,}\.\w+$/.test(override)) {
+    return base;
+  }
   if (Array.isArray(base) || Array.isArray(override)) return (override ?? base) as T;
   if (typeof base === "object" && typeof override === "object") {
     const out: any = { ...base };
