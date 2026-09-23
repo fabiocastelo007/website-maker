@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +10,16 @@ import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/login")({
+  head: () => ({
+    meta: [
+      { title: "Entrar | D.Tiba Gráfica" },
+      { name: "description", content: "Entre na área administrativa da D.Tiba Gráfica." },
+      { property: "og:title", content: "Entrar | D.Tiba Gráfica" },
+      { property: "og:description", content: "Acesso seguro à administração do site D.Tiba Gráfica." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: LoginPage,
 });
 
@@ -20,6 +30,7 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  const emailInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!loading && session) navigate({ to: "/admin" });
@@ -69,10 +80,20 @@ function LoginPage() {
         <form onSubmit={submit} className="space-y-3">
           <div className="space-y-1.5">
             <Label htmlFor="e">Email</Label>
-            <Input id="e" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <Input ref={emailInput} id="e" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="p">Palavra-passe</Label>
+            <div className="flex items-center justify-between gap-3">
+              <Label htmlFor="p">Palavra-passe</Label>
+              <Button
+                type="button"
+                variant="link"
+                className="h-auto p-0 text-xs font-medium"
+                onClick={() => navigate({ to: "/forgot-password", search: { email: emailInput.current?.value ?? email } })}
+              >
+                Esqueci a palavra-passe
+              </Button>
+            </div>
             <Input id="p" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
           </div>
           {err && <p className="text-sm text-destructive">{err}</p>}
