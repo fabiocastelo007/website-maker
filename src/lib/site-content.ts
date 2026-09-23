@@ -27,9 +27,11 @@ export type ServiceItem = { icon: string; title: string; desc: string };
 export type PortfolioItem = { src: string; label: string; categoryId?: string };
 export type PortfolioCategory = { id: string; name: string };
 export type ValueItem = { t: string; d: string };
+export type SiteTheme = "dark-premium" | "editorial-light" | "professional-grid";
 
 export type SiteContent = {
   brand: { logo: string };
+  appearance: { theme: SiteTheme };
   hero: {
     badge: string;
     titleLine1: string;
@@ -78,6 +80,7 @@ export type SiteContent = {
 
 export const defaultContent: SiteContent = {
   brand: { logo: logoImg },
+  appearance: { theme: "dark-premium" },
   hero: {
     badge: "Soluções Gráficas Completas em Luanda",
     titleLine1: "Damos cor",

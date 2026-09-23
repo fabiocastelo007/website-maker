@@ -17,6 +17,7 @@ import {
   type PortfolioItem,
   type PortfolioCategory,
   type ValueItem,
+  type SiteTheme,
 } from "@/lib/site-content";
 import { ImageField } from "@/components/admin/ImageField";
 import { supabase } from "@/integrations/supabase/client";
@@ -161,6 +162,34 @@ function AdminPanel({ onLogout }: { onLogout: () => void | Promise<void> }) {
                 onChange={(v) => update("brand", { ...draft.brand, logo: v })}
                 aspect="aspect-square"
               />
+              <div className="space-y-3 border-t border-border pt-5">
+                <div>
+                  <h3 className="font-bold">Estilo visual do site</h3>
+                  <p className="text-sm text-muted-foreground">Escolha a apresentação aplicada imediatamente a todas as secções.</p>
+                </div>
+                <div className="grid gap-3 md:grid-cols-3">
+                  {([
+                    { id: "dark-premium", name: "Escuro premium", colors: ["bg-theme-charcoal", "bg-theme-red", "bg-theme-gold"] },
+                    { id: "editorial-light", name: "Editorial luminoso", colors: ["bg-theme-paper", "bg-theme-red", "bg-theme-charcoal"] },
+                    { id: "professional-grid", name: "Grade profissional", colors: ["bg-theme-paper", "bg-theme-gold", "bg-theme-red"] },
+                  ] as const).map((theme) => (
+                    <Button
+                      key={theme.id}
+                      type="button"
+                      variant="outline"
+                      onClick={() => update("appearance", { theme: theme.id as SiteTheme })}
+                      className={`h-auto min-h-24 justify-start rounded-md p-4 text-left ${draft.appearance.theme === theme.id ? "border-primary ring-2 ring-primary/20" : ""}`}
+                    >
+                      <span className="w-full">
+                        <span className="mb-3 flex gap-1.5">
+                          {theme.colors.map((color) => <span key={color} className={`h-5 flex-1 rounded-sm ${color}`} />)}
+                        </span>
+                        <span className="block font-semibold">{theme.name}</span>
+                      </span>
+                    </Button>
+                  ))}
+                </div>
+              </div>
             </Card>
           </TabsContent>
 

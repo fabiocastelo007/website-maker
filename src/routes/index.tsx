@@ -184,7 +184,7 @@ function Index() {
   })();
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className={`site-shell site-theme-${c.appearance.theme} min-h-screen bg-background text-foreground`}>
       {/* NAV */}
       <header className="fixed top-0 inset-x-0 z-50 backdrop-blur-md bg-background/70 border-b border-border/50">
         <div className="container mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-2">
@@ -234,9 +234,8 @@ function Index() {
       </header>
 
       {/* HERO */}
-      <section id="top" className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-hero opacity-95" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15),transparent_50%)]" />
+      <section id="top" className="hero-surface relative overflow-hidden">
+        <div className="hero-color-field absolute inset-0" />
 
         {/* Imagem em altura total no desktop */}
         <div className="hidden lg:block absolute inset-y-0 right-0 w-1/2">
@@ -246,31 +245,31 @@ function Index() {
           {/* desvanecer + desfoque na base */}
           <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-accent via-accent/40 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 h-36 backdrop-blur-xl [mask-image:linear-gradient(to_top,black_20%,transparent)]" />
-          <div className="absolute bottom-10 left-10 bg-background rounded-2xl p-5 shadow-card max-w-[220px]">
+          <div className="absolute bottom-10 left-10 max-w-[220px] rounded-md border border-border bg-card p-5 shadow-card">
             <div className="text-3xl font-extrabold text-gradient">{c.hero.statNumber}</div>
             <div className="text-sm text-muted-foreground">{c.hero.statLabel}</div>
           </div>
         </div>
 
         <div className="container mx-auto px-6 relative grid lg:grid-cols-2 gap-12 items-center">
-          <div className="text-primary-foreground pt-32 pb-20 lg:py-44">
-            <span className="inline-block px-4 py-1.5 rounded-full bg-white/15 backdrop-blur text-xs font-semibold tracking-wider uppercase mb-6">
+          <div className="hero-copy pt-32 pb-20 lg:py-44">
+            <span className="mb-6 inline-block border-l-2 border-accent pl-3 text-xs font-semibold uppercase text-accent">
               {c.hero.badge}
             </span>
-            <h1 className="text-5xl md:text-7xl font-extrabold leading-[0.95] mb-6">
+            <h1 className="mb-6 text-5xl leading-[0.95] md:text-7xl">
               {c.hero.titleLine1}<br />{c.hero.titleLine2} <span className="italic">{c.hero.titleEmphasis}</span>
             </h1>
-            <p className="text-lg md:text-xl text-white/90 max-w-xl mb-8 leading-relaxed">
+            <p className="hero-subtitle mb-8 max-w-xl text-lg leading-relaxed md:text-xl">
               {c.hero.subtitle}
             </p>
             <div className="flex flex-wrap gap-4">
               <a href="#portfolio">
-                <Button size="lg" className="bg-white text-primary hover:bg-white/90 rounded-full font-semibold">
+                <Button size="lg" className="rounded-md bg-primary font-semibold text-primary-foreground hover:bg-primary/90">
                   {c.hero.ctaPrimary} <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               </a>
               <a href="#contacto">
-                <Button size="lg" variant="outline" className="rounded-full border-white/40 text-primary-foreground hover:bg-white/10 bg-transparent">
+                <Button size="lg" variant="outline" className="rounded-md border-border bg-transparent text-foreground hover:bg-muted">
                   {c.hero.ctaSecondary}
                 </Button>
               </a>
@@ -279,12 +278,12 @@ function Index() {
 
           {/* Imagem no mobile */}
           <div className="relative lg:hidden pb-16">
-            <div className="relative rounded-3xl overflow-hidden shadow-elegant aspect-[4/5]">
+            <div className="relative aspect-[4/5] overflow-hidden rounded-md shadow-elegant">
               <img src={c.hero.image} alt="Cores vibrantes da D.Tiba" className="w-full h-full object-cover" />
               <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-accent/80 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 h-24 backdrop-blur-lg [mask-image:linear-gradient(to_top,black_20%,transparent)]" />
             </div>
-            <div className="absolute -bottom-2 -left-2 bg-background rounded-2xl p-5 shadow-card max-w-[220px]">
+            <div className="absolute -bottom-2 -left-2 max-w-[220px] rounded-md border border-border bg-card p-5 shadow-card">
               <div className="text-3xl font-extrabold text-gradient">{c.hero.statNumber}</div>
               <div className="text-sm text-muted-foreground">{c.hero.statLabel}</div>
             </div>
@@ -296,7 +295,7 @@ function Index() {
       <section id="sobre" className="py-24">
         <div className="container mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
           <div className="relative">
-            <div className="aspect-square rounded-3xl overflow-hidden bg-gradient-dark p-12 flex items-center justify-center shadow-card">
+            <div className="about-visual flex aspect-square items-center justify-center overflow-hidden rounded-md p-12 shadow-card">
               <img src={c.about.image} alt="Identidade D.Tiba" className="max-w-full max-h-full object-contain" />
             </div>
           </div>
@@ -306,7 +305,7 @@ function Index() {
             <p className="text-lg text-muted-foreground leading-relaxed mb-8">{c.about.text}</p>
             <div className="grid sm:grid-cols-3 gap-4">
               {c.about.values.map((v) => (
-                <div key={v.t} className="rounded-2xl p-5 bg-muted border border-border">
+                <div key={v.t} className="value-card rounded-md border border-border bg-muted p-5">
                   <div className="font-bold text-primary mb-1">{v.t}</div>
                   <div className="text-sm text-muted-foreground leading-snug">{v.d}</div>
                 </div>
@@ -317,7 +316,7 @@ function Index() {
       </section>
 
       {/* SERVIÇOS */}
-      <section id="servicos" className="py-24 bg-muted/40">
+      <section id="servicos" className="services-band py-24">
         <div className="container mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <span className="text-sm font-semibold text-primary tracking-widest uppercase">{c.services.eyebrow}</span>
@@ -327,8 +326,8 @@ function Index() {
             {c.services.items.map((s, i) => {
               const Icon = ICONS[s.icon] ?? Sparkles;
               return (
-                <div key={i} className="group bg-card rounded-2xl p-7 border border-border hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 shadow-card">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-hero flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                 <div key={i} className="service-card group rounded-md border border-border bg-card p-7 transition-all duration-300 hover:-translate-y-1 hover:border-primary/60">
+                   <div className="service-icon mb-5 flex h-12 w-12 items-center justify-center rounded-md bg-gradient-hero transition-transform group-hover:scale-105">
                     <Icon className="w-6 h-6 text-primary-foreground" />
                   </div>
                   <h3 className="text-xl font-bold mb-2">{s.title}</h3>
@@ -352,7 +351,7 @@ function Index() {
           <div className="relative overflow-hidden marquee-mask">
             <div className="flex w-max marquee-track gap-6 py-2">
               {[...c.logos.items, ...c.logos.items, ...c.logos.items, ...c.logos.items].map((l, i) => (
-                <div key={i} className="h-28 w-44 md:h-36 md:w-56 shrink-0 rounded-2xl bg-card border border-border p-5 flex items-center justify-center">
+                 <div key={i} className="h-28 w-44 md:h-36 md:w-56 shrink-0 rounded-md bg-card border border-border p-5 flex items-center justify-center">
                   <img src={l} alt={`Logo cliente ${(i % c.logos.items.length) + 1}`} className="max-w-full max-h-full object-contain" />
                 </div>
               ))}
@@ -362,11 +361,11 @@ function Index() {
       </section>
 
       {/* PORTFOLIO */}
-      <section id="portfolio" className="py-24 bg-gradient-dark text-primary-foreground">
+      <section id="portfolio" className="portfolio-band py-24 text-primary-foreground">
         <div className="container mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <span className="text-sm font-semibold text-accent tracking-widest uppercase">{c.portfolio.eyebrow}</span>
-            <h1 className="text-6xl md:text-8xl font-extrabold mt-4 leading-[0.95] tracking-tight">
+            <h1 className="mt-4 text-6xl leading-[0.92] md:text-8xl">
               {c.portfolio.title}
             </h1>
           </div>
@@ -406,19 +405,18 @@ function Index() {
       {/* CTA / CONTACTO */}
       <section id="contacto" className="py-24">
         <div className="container mx-auto px-6">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-hero p-10 md:p-16 shadow-elegant">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.2),transparent_50%)]" />
-            <div className="relative grid lg:grid-cols-2 gap-10 items-center text-primary-foreground">
+           <div className="contact-panel relative overflow-hidden rounded-md border border-border bg-card p-10 shadow-elegant md:p-16">
+             <div className="relative grid items-center gap-10 lg:grid-cols-2">
               <div>
                 <h2 className="text-4xl md:text-5xl font-bold mb-4">{c.contact.title}</h2>
-                <p className="text-white/90 text-lg mb-6">{c.contact.subtitle}</p>
-                <ul className="space-y-3 text-white/95">
+                 <p className="mb-6 text-lg text-muted-foreground">{c.contact.subtitle}</p>
+                 <ul className="space-y-3 text-foreground">
                   {c.contact.bullets.map((b, i) => (
                     <li key={i} className="flex items-center gap-3"><Check className="w-5 h-5" /> {b}</li>
                   ))}
                 </ul>
               </div>
-              <div className="bg-background text-foreground rounded-2xl p-8 shadow-card">
+               <div className="rounded-md border border-border bg-background p-8 text-foreground shadow-card">
                 <h3 className="font-bold text-xl mb-5">{c.contact.boxTitle}</h3>
                 <div className="space-y-4">
                   <a href={`tel:${c.contact.phone}`} className="flex items-start gap-4 p-4 rounded-xl hover:bg-muted transition-colors">
@@ -456,7 +454,7 @@ function Index() {
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-secondary text-secondary-foreground py-10">
+       <footer className="site-footer bg-secondary py-10 text-secondary-foreground">
         <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
           <div className="flex items-center gap-2">
             <img src={c.brand.logo} alt="D.Tiba Gráfica" className="h-8 w-auto object-contain" />

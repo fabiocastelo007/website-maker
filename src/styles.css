@@ -19,6 +19,8 @@
  */
 
 @theme inline {
+  --font-sans: "Fira Sans", sans-serif;
+  --font-display: "DM Serif Display", serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -59,6 +61,10 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-theme-charcoal: oklch(0.16 0.015 45);
+  --color-theme-red: oklch(0.65 0.23 30);
+  --color-theme-gold: oklch(0.82 0.17 82);
+  --color-theme-paper: oklch(0.985 0.006 70);
 }
 
 :root {
@@ -146,13 +152,97 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Fira Sans', system-ui, sans-serif;
   }
 
   h1, h2, h3, h4 {
-    font-family: 'Poppins', 'Inter', sans-serif;
-    letter-spacing: -0.02em;
+    font-family: 'DM Serif Display', serif;
+    letter-spacing: 0;
   }
+}
+
+.site-shell {
+  --gradient-hero: linear-gradient(135deg, var(--primary), var(--primary-glow) 62%, var(--accent));
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
+.site-theme-dark-premium {
+  --background: oklch(0.155 0.014 45);
+  --foreground: oklch(0.98 0.005 70);
+  --card: oklch(0.205 0.014 45);
+  --card-foreground: oklch(0.98 0.005 70);
+  --popover: oklch(0.205 0.014 45);
+  --popover-foreground: oklch(0.98 0.005 70);
+  --primary: oklch(0.65 0.23 30);
+  --primary-foreground: oklch(0.99 0 0);
+  --primary-glow: oklch(0.72 0.2 45);
+  --secondary: oklch(0.11 0.01 45);
+  --secondary-foreground: oklch(0.98 0.005 70);
+  --muted: oklch(0.245 0.012 45);
+  --muted-foreground: oklch(0.72 0.015 70);
+  --accent: oklch(0.82 0.17 82);
+  --accent-foreground: oklch(0.16 0.015 45);
+  --border: oklch(1 0 0 / 0.1);
+  --input: oklch(1 0 0 / 0.14);
+  --ring: oklch(0.65 0.23 30);
+  --gradient-dark: linear-gradient(180deg, oklch(0.12 0.012 45), oklch(0.075 0.008 45));
+}
+
+.site-theme-editorial-light {
+  --background: oklch(0.985 0.006 70);
+  --foreground: oklch(0.16 0.015 45);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.16 0.015 45);
+  --muted: oklch(0.95 0.008 65);
+  --muted-foreground: oklch(0.43 0.02 45);
+  --secondary: oklch(0.16 0.015 45);
+  --secondary-foreground: oklch(0.98 0.005 70);
+  --primary: oklch(0.65 0.23 30);
+  --primary-foreground: oklch(0.99 0 0);
+  --accent: oklch(0.82 0.17 82);
+  --border: oklch(0.88 0.015 60);
+}
+
+.site-theme-professional-grid {
+  --background: oklch(0.97 0.006 65);
+  --foreground: oklch(0.16 0.015 45);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.16 0.015 45);
+  --muted: oklch(0.935 0.01 65);
+  --muted-foreground: oklch(0.45 0.02 45);
+  --secondary: oklch(0.16 0.015 45);
+  --secondary-foreground: oklch(0.98 0.005 70);
+  --primary: oklch(0.65 0.23 30);
+  --primary-foreground: oklch(0.99 0 0);
+  --accent: oklch(0.82 0.17 82);
+  --border: oklch(0.86 0.015 60);
+}
+
+.hero-surface { min-height: min(880px, 92vh); background: var(--background); }
+.hero-color-field { background: linear-gradient(125deg, var(--background) 0%, var(--background) 46%, color-mix(in oklab, var(--primary) 18%, var(--background)) 100%); }
+.hero-copy { color: var(--foreground); }
+.hero-subtitle { color: var(--muted-foreground); }
+.about-visual { background: var(--secondary); }
+.services-band { background: var(--secondary); color: var(--secondary-foreground); }
+.service-card { box-shadow: 0 18px 45px -28px color-mix(in oklab, var(--primary) 45%, transparent); }
+.portfolio-band { background: var(--gradient-dark); }
+.contact-panel { background: color-mix(in oklab, var(--card) 94%, var(--primary)); }
+
+.site-theme-editorial-light .hero-surface { min-height: 760px; }
+.site-theme-editorial-light .hero-color-field { background: var(--gradient-hero); }
+.site-theme-editorial-light .hero-copy,
+.site-theme-editorial-light .hero-subtitle { color: var(--primary-foreground); }
+.site-theme-editorial-light #sobre .container { grid-template-columns: minmax(280px, .85fr) minmax(0, 1.15fr); }
+.site-theme-editorial-light .services-band { background: var(--muted); color: var(--foreground); }
+
+.site-theme-professional-grid .hero-surface { min-height: 720px; }
+.site-theme-professional-grid #sobre .container { gap: 3rem; }
+.site-theme-professional-grid .services-band { background: var(--muted); color: var(--foreground); }
+.site-theme-professional-grid .service-card { padding: 1.5rem; box-shadow: 0 10px 28px -20px color-mix(in oklab, var(--foreground) 30%, transparent); }
+.site-theme-professional-grid #servicos .grid { gap: 1rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation-play-state: paused; }
 }
 
 @layer utilities {
