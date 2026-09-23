@@ -234,11 +234,24 @@ function Index() {
       </header>
 
       {/* HERO */}
-      <section id="top" className="relative pt-32 pb-24 overflow-hidden">
+      <section id="top" className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-hero opacity-95" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15),transparent_50%)]" />
+
+        {/* Imagem em altura total no desktop */}
+        <div className="hidden lg:block absolute inset-y-0 right-0 w-1/2">
+          <img src={c.hero.image} alt="Cores vibrantes da D.Tiba" className="w-full h-full object-cover" />
+          {/* desvanecer + desfoque na base */}
+          <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-accent via-accent/40 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-36 backdrop-blur-xl [mask-image:linear-gradient(to_top,black_20%,transparent)]" />
+          <div className="absolute bottom-10 left-10 bg-background rounded-2xl p-5 shadow-card max-w-[220px]">
+            <div className="text-3xl font-extrabold text-gradient">{c.hero.statNumber}</div>
+            <div className="text-sm text-muted-foreground">{c.hero.statLabel}</div>
+          </div>
+        </div>
+
         <div className="container mx-auto px-6 relative grid lg:grid-cols-2 gap-12 items-center">
-          <div className="text-primary-foreground">
+          <div className="text-primary-foreground pt-32 pb-20 lg:py-44">
             <span className="inline-block px-4 py-1.5 rounded-full bg-white/15 backdrop-blur text-xs font-semibold tracking-wider uppercase mb-6">
               {c.hero.badge}
             </span>
@@ -261,11 +274,15 @@ function Index() {
               </a>
             </div>
           </div>
-          <div className="relative">
+
+          {/* Imagem no mobile */}
+          <div className="relative lg:hidden pb-16">
             <div className="relative rounded-3xl overflow-hidden shadow-elegant aspect-[4/5]">
               <img src={c.hero.image} alt="Cores vibrantes da D.Tiba" className="w-full h-full object-cover" />
+              <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-accent/80 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 h-24 backdrop-blur-lg [mask-image:linear-gradient(to_top,black_20%,transparent)]" />
             </div>
-            <div className="absolute -bottom-6 -left-6 bg-background rounded-2xl p-5 shadow-card max-w-[220px]">
+            <div className="absolute -bottom-2 -left-2 bg-background rounded-2xl p-5 shadow-card max-w-[220px]">
               <div className="text-3xl font-extrabold text-gradient">{c.hero.statNumber}</div>
               <div className="text-sm text-muted-foreground">{c.hero.statLabel}</div>
             </div>
