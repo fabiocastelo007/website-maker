@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +30,7 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  const emailInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!loading && session) navigate({ to: "/admin" });
@@ -79,7 +80,7 @@ function LoginPage() {
         <form onSubmit={submit} className="space-y-3">
           <div className="space-y-1.5">
             <Label htmlFor="e">Email</Label>
-            <Input id="e" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <Input ref={emailInput} id="e" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
           <div className="space-y-1.5">
             <div className="flex items-center justify-between gap-3">
@@ -88,7 +89,7 @@ function LoginPage() {
                 type="button"
                 variant="link"
                 className="h-auto p-0 text-xs font-medium"
-                onClick={() => navigate({ to: "/forgot-password", search: { email } })}
+                onClick={() => navigate({ to: "/forgot-password", search: { email: emailInput.current?.value ?? email } })}
               >
                 Esqueci a palavra-passe
               </Button>
