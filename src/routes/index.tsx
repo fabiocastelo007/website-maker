@@ -330,12 +330,14 @@ function Index() {
               <h2 className="text-3xl md:text-4xl font-bold mt-2">{c.logos.title}</h2>
             </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {c.logos.items.map((l, i) => (
-              <div key={i} className="aspect-square rounded-2xl bg-card border border-border p-4 flex items-center justify-center hover:shadow-card hover:border-primary/40 transition-all">
-                <img src={l} alt={`Logo cliente ${i + 1}`} className="max-w-full max-h-full object-contain" />
-              </div>
-            ))}
+          <div className="relative overflow-hidden marquee-mask">
+            <div className="flex w-max marquee-track gap-6 py-2">
+              {[...c.logos.items, ...c.logos.items, ...c.logos.items, ...c.logos.items].map((l, i) => (
+                <div key={i} className="h-28 w-44 md:h-36 md:w-56 shrink-0 rounded-2xl bg-card border border-border p-5 flex items-center justify-center">
+                  <img src={l} alt={`Logo cliente ${(i % c.logos.items.length) + 1}`} className="max-w-full max-h-full object-contain" />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
