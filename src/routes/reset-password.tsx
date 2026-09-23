@@ -98,7 +98,7 @@ function ResetPasswordPage() {
               Este link expirou ou não é válido. Solicite um novo link de recuperação.
             </p>
             <Button asChild className="w-full bg-gradient-hero">
-              <Link to="/forgot-password">Solicitar novo link</Link>
+              <Link to="/forgot-password" search={{ email: "" }}>Solicitar novo link</Link>
             </Button>
           </div>
         ) : (
