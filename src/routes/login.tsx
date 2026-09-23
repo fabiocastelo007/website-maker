@@ -84,12 +84,14 @@ function LoginPage() {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between gap-3">
               <Label htmlFor="p">Palavra-passe</Label>
-              <a
-                href={`/forgot-password?email=${encodeURIComponent(email)}`}
-                className="text-xs font-medium text-primary hover:underline"
+              <Button
+                type="button"
+                variant="link"
+                className="h-auto p-0 text-xs font-medium"
+                onClick={() => navigate({ to: "/forgot-password", search: { email } })}
               >
                 Esqueci a palavra-passe
-              </a>
+              </Button>
             </div>
             <Input id="p" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
           </div>
