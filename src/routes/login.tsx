@@ -10,6 +10,16 @@ import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/login")({
+  head: () => ({
+    meta: [
+      { title: "Entrar | D.Tiba Gráfica" },
+      { name: "description", content: "Entre na área administrativa da D.Tiba Gráfica." },
+      { property: "og:title", content: "Entrar | D.Tiba Gráfica" },
+      { property: "og:description", content: "Acesso seguro à administração do site D.Tiba Gráfica." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: LoginPage,
 });
 
@@ -72,7 +82,16 @@ function LoginPage() {
             <Input id="e" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="p">Palavra-passe</Label>
+            <div className="flex items-center justify-between gap-3">
+              <Label htmlFor="p">Palavra-passe</Label>
+              <Link
+                to="/forgot-password"
+                search={{ email }}
+                className="text-xs font-medium text-primary hover:underline"
+              >
+                Esqueci a palavra-passe
+              </Link>
+            </div>
             <Input id="p" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
           </div>
           {err && <p className="text-sm text-destructive">{err}</p>}

@@ -9,6 +9,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 
 export const Route = createFileRoute("/signup")({
+  head: () => ({
+    meta: [
+      { title: "Criar conta | D.Tiba Gráfica" },
+      { name: "description", content: "Crie uma conta de acesso à D.Tiba Gráfica." },
+      { property: "og:title", content: "Criar conta | D.Tiba Gráfica" },
+      { property: "og:description", content: "Registo seguro para acesso à área da D.Tiba Gráfica." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: SignupPage,
 });
 
