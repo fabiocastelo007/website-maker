@@ -240,7 +240,7 @@ function Index() {
 
         {/* Imagem em altura total no desktop */}
         <div className="hidden lg:block absolute inset-y-0 right-0 w-1/2">
-          <img src={c.hero.image} alt="Cores vibrantes da D.Tiba" className="w-full h-full object-cover" />
+          <img src={c.hero.image} alt="Cores vibrantes da D.Tiba" className="w-full h-full object-cover [mask-image:linear-gradient(to_right,transparent_0%,black_18%)]" />
           {/* desvanecer + desfoque na base */}
           <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-accent via-accent/40 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 h-36 backdrop-blur-xl [mask-image:linear-gradient(to_top,black_20%,transparent)]" />
